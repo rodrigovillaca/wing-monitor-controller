@@ -50,6 +50,10 @@ export interface MonitorState {
   isSubwooferEnabled: boolean;
   isTalkbackEnabled: boolean;
   isPolarityFlipped: boolean;
+  meters?: {
+    left: number;  // Linear 0.0 - 1.0
+    right: number; // Linear 0.0 - 1.0
+  };
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';

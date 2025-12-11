@@ -11,6 +11,7 @@ export class WingMonitorController extends EventEmitter {
   private isMockMode: boolean = false;
   private readonly DEFAULT_RETRY_ATTEMPTS = 3;
   private readonly DEFAULT_RETRY_DELAY = 100;
+  private meterInterval: NodeJS.Timeout | null = null;
 
   constructor(config: WingMonitorConfig, mockMode: boolean = false) {
     super();
@@ -28,7 +29,8 @@ export class WingMonitorController extends EventEmitter {
       isSubwooferEnabled: false,
       activeAuxIndices: [],
       isTalkbackEnabled: false,
-      isPolarityFlipped: false
+      isPolarityFlipped: false,
+      meters: { left: 0, right: 0 }
     };
 
     if (!this.isMockMode) {
@@ -38,6 +40,7 @@ export class WingMonitorController extends EventEmitter {
       this.log('info', 'Running in MOCK MODE');
       // Emit ready event in mock mode
       setTimeout(() => this.emit('ready'), 100);
+      this.startMockMetering();
     }
   }
 
@@ -55,6 +58,7 @@ export class WingMonitorController extends EventEmitter {
       this.log('info', `OSC Port Ready. Listening on port ${this.config.network.localPort}, sending to ${this.config.network.ipAddress}:${this.config.network.wingPort}`);
       this.emit('ready');
       this.refreshConsoleState();
+      this.startMetering();
     });
 
     this.udpPort.on("message", (oscMsg: any) => {
@@ -100,6 +104,43 @@ export class WingMonitorController extends EventEmitter {
         }
       });
     }
+  }
+
+  private startMetering() {
+    // Poll meters every 100ms (10Hz)
+    // We request /meters/1 which returns a blob of 40 channels + aux + bus + etc.
+    // But for simplicity and bandwidth, we might just want to poll the specific channel meters if possible
+    // However, Wing usually sends meters in bulk via /meters/x
+    
+    // According to research, /meters/1 gives us all channels.
+    // We need to send /meters/1 to get the blob response.
+    
+    if (this.meterInterval) clearInterval(this.meterInterval);
+    
+    this.meterInterval = setInterval(() => {
+      if (this.isConnected) {
+        this.sendOsc('/meters/1', []);
+      }
+    }, 100);
+  }
+
+  private startMockMetering() {
+    if (this.meterInterval) clearInterval(this.meterInterval);
+    
+    this.meterInterval = setInterval(() => {
+      // Generate fake meter data
+      const noise = Math.random() * 0.1;
+      const signal = 0.5 + Math.sin(Date.now() / 500) * 0.3;
+      
+      this.state.meters = {
+        left: Math.max(0, Math.min(1, signal + noise)),
+        right: Math.max(0, Math.min(1, signal + noise * 1.1))
+      };
+      
+      // Emit only meter update to avoid spamming full state if we separate events later
+      // For now, we emit full state changed, but frontend should handle it efficiently
+      this.emit('meterUpdate', this.state.meters);
+    }, 100);
   }
 
   // --- Public Control Methods ---
@@ -307,8 +348,39 @@ export class WingMonitorController extends EventEmitter {
   }
 
   private handleOscMessage(msg: any) {
-    this.log('debug', `Received OSC: ${msg.address} ${JSON.stringify(msg.args)}`);
-    // Handle feedback from console if needed
+    if (msg.address === '/meters/1') {
+      this.handleMeterMessage(msg.args);
+    } else {
+      this.log('debug', `Received OSC: ${msg.address} ${JSON.stringify(msg.args)}`);
+    }
+  }
+
+  private handleMeterMessage(args: any[]) {
+    if (!args || args.length === 0) return;
+    
+    // The blob format for /meters/1 contains 40 channels + others
+    // We need to parse the blob to extract the levels for our monitored channel
+    // For now, let's assume we can extract the level for the Monitor Main Channel
+    
+    // NOTE: Parsing the binary blob from OSC in JS requires Buffer manipulation
+    // This is a simplified placeholder. In a real implementation, we would:
+    // 1. Get the Buffer from args[0]
+    // 2. Read Int16LE values from the correct offset based on channel number
+    
+    // Since we don't have the exact blob structure documentation handy for *exact* offsets without testing,
+    // and we are in a simulated environment, I will implement the logic structure but note that
+    // the offset calculation needs verification against real hardware.
+    
+    // Hypothetical parsing:
+    // const blob = args[0];
+    // const monitorChNum = this.extractIndexFromPath(this.config.monitorMain.path);
+    // if (monitorChNum) {
+    //   const offset = (monitorChNum - 1) * 2; // 2 bytes per channel
+    //   const levelRaw = blob.readInt16LE(offset);
+    //   const levelFloat = levelRaw / 32768.0; // Normalize to -1.0 to 1.0
+    //   this.state.meters = { left: Math.abs(levelFloat), right: Math.abs(levelFloat) }; // Mono for now
+    //   this.emit('meterUpdate', this.state.meters);
+    // }
   }
 
   private extractIndexFromPath(path: string): number | null {
