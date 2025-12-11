@@ -9,32 +9,38 @@ export const config: WingMonitorConfig = {
     retryDelay: 100,           // Delay in ms between retries
   },
   monitorMain: {
-    path: '/ch/40', // Fixed channel used for Monitor Input
+    path: '/ch/40', // Fixed channel used for Monitor Input (Source Patching Destination)
     trim: 0
   },
   auxMonitor: {
-    path: '/aux/8', // Fixed channel used for Aux Input
+    path: '/aux/8', // Fixed channel used for Aux Input (Source Patching Destination)
     trim: 0
   },
+  // INPUTS: Sources that will be patched to the Monitor Main channel
   monitorInputs: [
-    { name: 'DAW 1-2', sourceGroup: 'USB', sourceIndex: 1 }, // USB 1/2
+    { name: 'DAW 1-2', sourceGroup: 'USB', sourceIndex: 1 },   // USB 1/2
     { name: 'REF TRACK', sourceGroup: 'USB', sourceIndex: 3 }, // USB 3/4
     { name: 'CLIENT', sourceGroup: 'AES50A', sourceIndex: 1 }, // AES50 A 1/2
   ],
+  // AUX INPUTS: Sources that will be patched to the Aux Monitor channel
   auxInputs: [
     { name: 'BLUETOOTH', sourceGroup: 'AUX', sourceIndex: 1 }, // AUX 1/2
     { name: 'MINI JACK', sourceGroup: 'AUX', sourceIndex: 3 }, // AUX 3/4
   ],
+  // OUTPUTS: Matrix buses that feed your speakers
+  // NOTE: You must route these Matrices to the physical outputs on your console:
+  // Matrix 1 -> Local 1/2 (KH120)
+  // Matrix 2 -> Local 3/4 (JBL)
+  // Matrix 3 -> AES50 A 7/8 (Auratone)
   monitorMatrixOutputs: [
-    { name: 'MAIN MON', path: '/mtx/1' },
-    { name: 'NEARFIELD', path: '/mtx/2' },
-    { name: 'MINI CUBE', path: '/mtx/3' }
+    { name: 'KH120', path: '/mtx/1' },
+    { name: 'JBL', path: '/mtx/2' },
+    { name: 'AURATONE', path: '/mtx/3' }
   ],
   subwoofer: {
     path: '/mtx/4',
     trim: 0,
-    // Crossover is now handled manually on the console.
-    // This config just enables/disables the subwoofer matrix.
+    // Crossover is handled manually on the console EQ
   }
 };
 

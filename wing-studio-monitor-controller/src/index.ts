@@ -1,8 +1,9 @@
 import * as osc from 'osc';
+import { EventEmitter } from 'events';
 import { WingMonitorConfig, MonitorState, LogLevel, InputSource } from './types';
 export type { MonitorState };
 
-export class WingMonitorController {
+export class WingMonitorController extends EventEmitter {
   private config: WingMonitorConfig;
   private state: MonitorState;
   private udpPort: any;
@@ -12,6 +13,7 @@ export class WingMonitorController {
   private readonly DEFAULT_RETRY_DELAY = 100;
 
   constructor(config: WingMonitorConfig, mockMode: boolean = false) {
+    super();
     this.config = config;
     this.isMockMode = mockMode;
     
@@ -34,6 +36,8 @@ export class WingMonitorController {
     } else {
       this.isConnected = true;
       this.log('info', 'Running in MOCK MODE');
+      // Emit ready event in mock mode
+      setTimeout(() => this.emit('ready'), 100);
     }
   }
 
@@ -49,6 +53,7 @@ export class WingMonitorController {
     this.udpPort.on("ready", () => {
       this.isConnected = true;
       this.log('info', `OSC Port Ready. Listening on port ${this.config.network.localPort}, sending to ${this.config.network.ipAddress}:${this.config.network.wingPort}`);
+      this.emit('ready');
       this.refreshConsoleState();
     });
 
@@ -58,12 +63,14 @@ export class WingMonitorController {
 
     this.udpPort.on("error", (err: any) => {
       this.log('error', `OSC Error: ${err.message}`);
+      this.emit('error', err);
     });
 
     try {
       this.udpPort.open();
     } catch (err: any) {
       this.log('error', `Failed to open UDP port: ${err.message}`);
+      this.emit('error', err);
     }
   }
 
@@ -88,23 +95,6 @@ export class WingMonitorController {
     if (this.config.auxInputs) {
       this.config.auxInputs.forEach((_, index) => {
         const isActive = this.state.activeAuxIndices.includes(index);
-        // We only need to update if it's active, or if we need to clear it
-        // But with source patching, we might just sum them?
-        // Wait, the requirement is "Aux Inputs" (plural).
-        // If we have a single Aux Monitor Channel, we can only patch ONE source to it at a time unless we mix them elsewhere.
-        // If the user wants simultaneous Aux inputs, they need to be mixed.
-        // BUT, the new requirement says: "Aux Monitor Channel" (singular).
-        // If we select multiple aux inputs, we might need to cycle them or just support one active at a time for the Aux Monitor Channel.
-        // OR, we assume the user selects ONE aux input source to be patched to the Aux Monitor Channel.
-        // Let's assume for now we patch the LAST selected aux input, or we only allow one active aux input in the UI if we use this architecture.
-        // However, the UI allows multiple.
-        // If we want multiple, we can't use a single channel source patch.
-        // We would need to use the OLD method (mixing) for Aux inputs, OR patch them to different channels and mix those.
-        
-        // Let's stick to the requested architecture: "Aux Monitor Channel" (singular).
-        // This implies we are patching a source to it.
-        // If the user selects multiple, we might have a conflict.
-        // For now, let's just patch the most recently activated one, or the first active one.
         if (isActive) {
              this.setAuxSource(index);
         }
@@ -116,6 +106,7 @@ export class WingMonitorController {
 
   public setVolume(percent: number) {
     this.state.mainLevel = Math.max(0, Math.min(100, percent));
+    this.emitStateChange();
     
     // Map 0-100% to Wing Fader value (float 0.0 - 1.0)
     const faderValue = this.state.mainLevel / 100; 
@@ -133,6 +124,8 @@ export class WingMonitorController {
 
   public setMute(muted: boolean) {
     this.state.isMuted = muted;
+    this.emitStateChange();
+    
     const monitorChannelPath = this.config.monitorMain.path;
     this.sendOsc(`${monitorChannelPath}/mute`, [{ type: 'i', value: muted ? 1 : 0 }]); // 1 is muted
     
@@ -144,26 +137,20 @@ export class WingMonitorController {
 
   public setDim(dimmed: boolean) {
     this.state.isDimmed = dimmed;
-    // We can use the console's Dim function if we are using the Monitor section
-    // Or we can just lower the fader.
-    // Since we are using a regular channel as "Monitor Main", we don't have a built-in "Dim" button for it.
-    // We would need to implement Dim by reducing the volume.
-    // But that changes the fader position.
-    // Alternatively, we can use the "Talkback Dim" feature if we route through Talkback? No.
-    // Let's just assume for now we don't change the fader, but maybe we can use a DCA or Group?
-    // Or we just ignore Dim for now in this architecture unless we have a specific command.
-    // Wait, the previous code used `/outputs/main/dim`. If that works globally, great.
+    this.emitStateChange();
     this.sendOsc(`/outputs/main/dim`, [{ type: 'i', value: dimmed ? 1 : 0 }]); 
   }
 
   public setMono(mono: boolean) {
     this.state.isMono = mono;
+    this.emitStateChange();
     this.sendOsc(`/outputs/main/mono`, [{ type: 'i', value: mono ? 1 : 0 }]);
   }
 
   public setInput(index: number) {
     if (index < 0 || index >= this.config.monitorInputs.length) return;
     this.state.activeInputIndex = index;
+    this.emitStateChange();
     
     // Patch the selected source to the Monitor Main Channel
     this.setMonitorSource(index);
@@ -176,6 +163,7 @@ export class WingMonitorController {
     this.disableSpeaker(this.state.activeOutputIndex);
     
     this.state.activeOutputIndex = index;
+    this.emitStateChange();
     
     // Enable new output
     this.setActiveSpeaker(index);
@@ -188,6 +176,7 @@ export class WingMonitorController {
 
   public setSubwoofer(enabled: boolean) {
     this.state.isSubwooferEnabled = enabled;
+    this.emitStateChange();
     
     const subConfig = this.config.subwoofer;
     if (subConfig) {
@@ -208,20 +197,17 @@ export class WingMonitorController {
     const currentIndex = this.state.activeAuxIndices.indexOf(index);
     if (currentIndex === -1) {
       // Enable Aux
-      // For this architecture, we only support ONE active aux input at a time if we are patching sources.
-      // So we clear the others.
       this.state.activeAuxIndices = [index]; 
       this.setAuxSource(index);
     } else {
       // Disable Aux
       this.state.activeAuxIndices = [];
-      // We need to unpatch or mute the aux channel?
-      // Or just mute the Aux Monitor Channel
       if (this.config.auxMonitor) {
           const auxChannelPath = this.config.auxMonitor.path;
           this.sendOsc(`${auxChannelPath}/mute`, [{ type: 'i', value: 1 }]);
       }
     }
+    this.emitStateChange();
   }
 
   // --- Internal Logic ---
@@ -234,17 +220,8 @@ export class WingMonitorController {
     const chNum = this.extractIndexFromPath(monitorChannelPath);
     
     if (chNum) {
-        // Patch Source to Channel Input
-        // Command: /ch/{id}/in/conn/grp (Group) and /ch/{id}/in/conn/in (Index)
-        
-        // Map sourceGroup string to OSC enum string/value if needed
-        // The Wing expects specific strings or indices.
-        // Based on docs: OFF, LCL, AUX, AES, USB, CRD, MOD, PLAY, AES, USR, OSC, BUS, MAIN, MTX
-        
         this.sendOsc(`/ch/${chNum}/in/conn/grp`, [{ type: 's', value: input.sourceGroup }]);
         this.sendOsc(`/ch/${chNum}/in/conn/in`, [{ type: 'i', value: input.sourceIndex }]);
-        
-        // Ensure channel is unmuted
         this.sendOsc(`/ch/${chNum}/mute`, [{ type: 'i', value: 0 }]);
     }
   }
@@ -258,11 +235,8 @@ export class WingMonitorController {
     const chNum = this.extractIndexFromPath(auxChannelPath);
     
     if (chNum) {
-        // Patch Source to Aux Monitor Channel
         this.sendOsc(`/ch/${chNum}/in/conn/grp`, [{ type: 's', value: input.sourceGroup }]);
         this.sendOsc(`/ch/${chNum}/in/conn/in`, [{ type: 'i', value: input.sourceIndex }]);
-        
-        // Ensure channel is unmuted
         this.sendOsc(`/ch/${chNum}/mute`, [{ type: 'i', value: 0 }]);
     }
   }
@@ -273,10 +247,7 @@ export class WingMonitorController {
     
     const mtxNum = this.extractIndexFromPath(output.path);
     if (mtxNum) {
-      // Enable Direct Input (which should be set to Monitor Bus or Main 4)
       this.sendOsc(`/mtx/${mtxNum}/dir/on`, [{ type: 'i', value: 1 }]);
-      
-      // Unmute matrix
       this.sendOsc(`/mtx/${mtxNum}/mute`, [{ type: 'i', value: 0 }]);
     }
   }
@@ -287,21 +258,16 @@ export class WingMonitorController {
     
     const mtxNum = this.extractIndexFromPath(output.path);
     if (mtxNum) {
-      // Disable Direct Input
       this.sendOsc(`/mtx/${mtxNum}/dir/on`, [{ type: 'i', value: 0 }]);
-      
-      // Mute matrix
       this.sendOsc(`/mtx/${mtxNum}/mute`, [{ type: 'i', value: 1 }]);
     }
   }
 
   private applyCrossoverToSpeakers(enabled: boolean) {
-    // When sub is on, enable High Pass Filter (EQ) on active speakers
     const activeOutput = this.config.monitorMatrixOutputs[this.state.activeOutputIndex];
     if (activeOutput) {
       const mtxNum = this.extractIndexFromPath(activeOutput.path);
       if (mtxNum) {
-        // Enable/Disable EQ
         this.sendOsc(`/mtx/${mtxNum}/eq/on`, [{ type: 'i', value: enabled ? 1 : 0 }]);
       }
     }
@@ -351,12 +317,15 @@ export class WingMonitorController {
   }
 
   private log(level: LogLevel, message: string) {
-    // Simple logging, can be replaced with event
     if (level === 'error') {
       console.error(`[WingMonitor] ${message}`);
     } else {
       // console.log(`[WingMonitor] ${message}`);
     }
+  }
+  
+  private emitStateChange() {
+    this.emit('stateChanged', { ...this.state });
   }
   
   public getState(): MonitorState {

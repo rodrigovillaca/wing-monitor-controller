@@ -20,18 +20,18 @@ async function startServer() {
   
   const wingController = new WingMonitorController(wingConfig, MOCK_MODE);
   
-  // wingController.on('ready', () => {
-  //   console.log('Wing Controller connected and ready');
-  //   broadcastState(wingController.getState());
-  // });
+  wingController.on('ready', () => {
+    console.log('Wing Controller connected and ready');
+    broadcastState(wingController.getState());
+  });
 
-  // wingController.on('error', (err: any) => {
-  //   console.error('Wing Controller Error:', err);
-  // });
+  wingController.on('error', (err: any) => {
+    console.error('Wing Controller Error:', err);
+  });
 
-  // wingController.on('stateChanged', (state: any) => {
-  //   broadcastState(state);
-  // });
+  wingController.on('stateChanged', (state: any) => {
+    broadcastState(state);
+  });
 
   // Start OSC connection (Already connected in constructor)
   // wingController.connect();
