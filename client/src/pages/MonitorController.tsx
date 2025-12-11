@@ -55,7 +55,11 @@ export default function MonitorController() {
   useEffect(() => {
     // Connect to WebSocket
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-    const host = window.location.host;
+    // In development (port 3000), connect to backend on port 3001
+    // In production, connect to same host/port
+    const host = window.location.port === '3000' 
+      ? `${window.location.hostname}:3001` 
+      : window.location.host;
     const wsUrl = `${protocol}//${host}`;
     
     const connect = () => {

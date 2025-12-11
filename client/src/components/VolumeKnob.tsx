@@ -77,6 +77,7 @@ export function VolumeKnob({ value, onChange, size = 200, className }: VolumeKno
       {/* The Knob Dial */}
       <div
         ref={knobRef}
+        data-testid="volume-knob"
         className="knob-dial flex items-center justify-center"
         style={{ 
           width: size * 0.7, 
