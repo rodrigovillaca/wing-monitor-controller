@@ -1,0 +1,37 @@
+{
+  "project": {
+    "name": "Wing Studio Monitor Controller",
+    "description": "A web-based studio monitor controller for Behringer Wing Rack using OSC.",
+    "stack": {
+      "frontend": "React 19, Tailwind CSS 4, Neumorphic Design",
+      "backend": "Node.js, Express, WebSocket (ws)",
+      "library": "TypeScript, osc (UDP)",
+      "hardware": "Behringer Wing Rack"
+    }
+  },
+  "architecture": {
+    "library": "wing-studio-monitor-controller",
+    "frontend_path": "client",
+    "backend_path": "server",
+    "communication": "WebSocket (UI <-> Backend) -> OSC (Backend <-> Hardware)"
+  },
+  "configuration": {
+    "env_vars": [
+      "WING_IP",
+      "WING_PORT",
+      "LOCAL_PORT",
+      "MOCK_MODE"
+    ]
+  },
+  "design": {
+    "style": "Neumorphism (Soft UI)",
+    "font": "Rajdhani",
+    "colors": {
+      "base": "#E0E5EC",
+      "accent": "#00f3ff",
+      "led_cyan": "#00f3ff",
+      "led_amber": "#ffb300",
+      "led_red": "#ff3d00"
+    }
+  }
+}
