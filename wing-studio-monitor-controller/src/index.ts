@@ -128,14 +128,22 @@ export class WingMonitorController extends EventEmitter {
     if (this.meterInterval) clearInterval(this.meterInterval);
     
     this.meterInterval = setInterval(() => {
-      // Generate fake meter data
-      const noise = Math.random() * 0.1;
-      const signal = 0.5 + Math.sin(Date.now() / 500) * 0.3;
-      
-      this.state.meters = {
-        left: Math.max(0, Math.min(1, signal + noise)),
-        right: Math.max(0, Math.min(1, signal + noise * 1.1))
-      };
+      // Generate fake meter data based on volume and mute state
+      if (this.state.isMuted) {
+        this.state.meters = { left: 0, right: 0 };
+      } else {
+        // Base signal level scaled by volume
+        const volumeScale = this.state.mainLevel / 100;
+        const noise = Math.random() * 0.05;
+        // Create a stereo signal that bounces around
+        const signalL = (0.4 + Math.sin(Date.now() / 300) * 0.3) * volumeScale;
+        const signalR = (0.4 + Math.cos(Date.now() / 320) * 0.3) * volumeScale;
+        
+        this.state.meters = {
+          left: Math.max(0, Math.min(1, signalL + noise)),
+          right: Math.max(0, Math.min(1, signalR + noise))
+        };
+      }
       
       // Emit only meter update to avoid spamming full state if we separate events later
       // For now, we emit full state changed, but frontend should handle it efficiently
@@ -329,78 +337,33 @@ export class WingMonitorController extends EventEmitter {
         address: address,
         args: args
       });
-      this.log('debug', `Sent OSC: ${address} ${JSON.stringify(args)}`);
     } catch (err: any) {
-      this.log('error', `Failed to send OSC message (Attempt ${attempt}): ${err.message}`);
-      
-      const maxRetries = this.config.network.retryAttempts || this.DEFAULT_RETRY_ATTEMPTS;
-      const retryDelay = this.config.network.retryDelay || this.DEFAULT_RETRY_DELAY;
-
-      if (attempt <= maxRetries) {
-        this.log('warn', `Retrying OSC message to ${address} in ${retryDelay}ms...`);
-        setTimeout(() => {
-          this.sendOsc(address, args, attempt + 1);
-        }, retryDelay);
-      } else {
-        this.log('error', `Given up sending OSC message to ${address} after ${maxRetries} retries.`);
-      }
+      this.log('error', `Failed to send OSC: ${err.message}`);
     }
   }
 
-  private handleOscMessage(msg: any) {
-    if (msg.address === '/meters/1') {
-      this.handleMeterMessage(msg.args);
-    } else {
-      this.log('debug', `Received OSC: ${msg.address} ${JSON.stringify(msg.args)}`);
+  private handleOscMessage(oscMsg: any) {
+    // Handle incoming OSC messages (e.g. meter data)
+    if (oscMsg.address === '/meters/1') {
+      // Parse meter blob
+      // This is complex as it's a binary blob usually
+      // For now we assume we get something parseable or we implement blob parsing later
     }
   }
 
-  private handleMeterMessage(args: any[]) {
-    if (!args || args.length === 0) return;
-    
-    // The blob format for /meters/1 contains 40 channels + others
-    // We need to parse the blob to extract the levels for our monitored channel
-    // For now, let's assume we can extract the level for the Monitor Main Channel
-    
-    // NOTE: Parsing the binary blob from OSC in JS requires Buffer manipulation
-    // This is a simplified placeholder. In a real implementation, we would:
-    // 1. Get the Buffer from args[0]
-    // 2. Read Int16LE values from the correct offset based on channel number
-    
-    // Since we don't have the exact blob structure documentation handy for *exact* offsets without testing,
-    // and we are in a simulated environment, I will implement the logic structure but note that
-    // the offset calculation needs verification against real hardware.
-    
-    // Hypothetical parsing:
-    // const blob = args[0];
-    // const monitorChNum = this.extractIndexFromPath(this.config.monitorMain.path);
-    // if (monitorChNum) {
-    //   const offset = (monitorChNum - 1) * 2; // 2 bytes per channel
-    //   const levelRaw = blob.readInt16LE(offset);
-    //   const levelFloat = levelRaw / 32768.0; // Normalize to -1.0 to 1.0
-    //   this.state.meters = { left: Math.abs(levelFloat), right: Math.abs(levelFloat) }; // Mono for now
-    //   this.emit('meterUpdate', this.state.meters);
-    // }
+  private emitStateChange() {
+    this.emit('stateChange', this.state);
+  }
+
+  private log(level: LogLevel, message: string) {
+    this.emit('log', { level, message, timestamp: new Date() });
+    if (this.isMockMode) {
+      console.log(`[${level.toUpperCase()}] ${message}`);
+    }
   }
 
   private extractIndexFromPath(path: string): number | null {
     const match = path.match(/\d+/);
     return match ? parseInt(match[0]) : null;
-  }
-
-  private log(level: LogLevel, message: string) {
-    if (level === 'error') {
-      console.error(`[WingMonitor] ${message}`);
-    } else {
-      // console.log(`[WingMonitor] ${message}`);
-    }
-  }
-  
-  private emitStateChange() {
-    this.emit('stateChanged', { ...this.state });
-  }
-  
-  public getState(): MonitorState {
-    return { ...this.state };
   }
 }
