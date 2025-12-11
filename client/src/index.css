@@ -89,7 +89,7 @@
   :root {
     /* Force Dark Theme Variables */
     --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
+    --foreground: 0 0% 100%;
 
     --card: 222.2 84% 4.9%;
     --card-foreground: 210 40% 98%;
@@ -132,9 +132,9 @@
 @layer base {
   :root {
     /* Neumorphism Variables (Dark Theme Default) */
-    --neu-base: #2e323b;
-    --neu-shadow-dark: #25282f;
-    --neu-shadow-light: #373c47;
+  --neu-base: #1a1d24;
+  --neu-shadow-dark: #14161b;
+  --neu-shadow-light: #20242d;
   }
 }
 
