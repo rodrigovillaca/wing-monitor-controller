@@ -128,3 +128,46 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer base {
+  :root {
+    /* Neumorphism Variables (Dark Theme Default) */
+    --neu-base: #2e323b;
+    --neu-shadow-dark: #25282f;
+    --neu-shadow-light: #373c47;
+  }
+}
+
+@layer utilities {
+  .bg-neu-base {
+    background-color: var(--neu-base);
+  }
+
+  .neu-flat {
+    background: var(--neu-base);
+    box-shadow: 5px 5px 10px var(--neu-shadow-dark),
+                -5px -5px 10px var(--neu-shadow-light);
+    border-radius: 1rem;
+  }
+
+  .neu-pressed {
+    background: var(--neu-base);
+    box-shadow: inset 5px 5px 10px var(--neu-shadow-dark),
+                inset -5px -5px 10px var(--neu-shadow-light);
+    border-radius: 1rem;
+  }
+  
+  .neu-convex {
+    background: linear-gradient(145deg, var(--neu-shadow-light), var(--neu-base));
+    box-shadow: 5px 5px 10px var(--neu-shadow-dark),
+                -5px -5px 10px var(--neu-shadow-light);
+    border-radius: 1rem;
+  }
+
+  .neu-concave {
+    background: linear-gradient(145deg, var(--neu-base), var(--neu-shadow-light));
+    box-shadow: 5px 5px 10px var(--neu-shadow-dark),
+                -5px -5px 10px var(--neu-shadow-light);
+    border-radius: 1rem;
+  }
+}
