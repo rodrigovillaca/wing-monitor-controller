@@ -8,7 +8,7 @@ interface VolumeKnobProps {
   className?: string;
 }
 
-export function VolumeKnob({ value, onChange, size = 200, className }: VolumeKnobProps) {
+export function VolumeKnob({ value, onChange, size, className }: VolumeKnobProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [startValue, setStartValue] = useState(0);
@@ -51,23 +51,26 @@ export function VolumeKnob({ value, onChange, size = 200, className }: VolumeKno
     };
   }, [isDragging, startY, startValue, onChange]);
 
+  // Use style for size if provided, otherwise rely on className or default
+  const containerStyle = size ? { width: size, height: size } : undefined;
+
   return (
     <div 
-      className={cn("knob-container select-none relative flex items-center justify-center", className)}
-      style={{ width: size, height: size }}
+      className={cn("knob-container select-none relative flex items-center justify-center aspect-square", className)}
+      style={containerStyle}
     >
       {/* Tick Marks */}
-      <div className="absolute inset-0 rounded-full">
+      <div className="absolute inset-0 rounded-full pointer-events-none">
         {Array.from({ length: 11 }).map((_, i) => {
           const deg = (i / 10) * 270 - 135;
           return (
             <div
               key={i}
-              className="absolute w-1 h-3 bg-gray-400 origin-bottom"
+              className="absolute w-[1%] h-[6%] bg-gray-400 origin-center"
               style={{
                 left: '50%',
-                top: '10px',
-                transform: `translateX(-50%) rotate(${deg}deg) translateY(${size/2 - 20}px)`
+                top: '50%',
+                transform: `translate(-50%, -50%) rotate(${deg}deg) translateY(-380%)`
               }}
             />
           );
@@ -78,23 +81,23 @@ export function VolumeKnob({ value, onChange, size = 200, className }: VolumeKno
       <div
         ref={knobRef}
         data-testid="volume-knob"
-        className="knob-dial flex items-center justify-center neu-convex !rounded-full"
+        className="knob-dial flex items-center justify-center neu-convex !rounded-full cursor-pointer active:cursor-grabbing"
         style={{ 
-          width: size * 0.7, 
-          height: size * 0.7,
+          width: '70%', 
+          height: '70%',
           transform: `rotate(${rotation}deg)`
         }}
         onMouseDown={handleMouseDown}
       >
         {/* Indicator Line */}
-        <div className="absolute top-4 w-1.5 h-8 bg-accent rounded-full shadow-[0_0_10px_var(--color-accent)]" />
+        <div className="absolute top-[10%] w-[2%] h-[15%] bg-accent rounded-full shadow-[0_0_10px_var(--color-accent)]" />
         
         {/* Center Cap */}
         <div className="w-1/3 h-1/3 rounded-full bg-neu-base shadow-inner" />
       </div>
       
       {/* Value Display */}
-      <div className="absolute bottom-[-40px] font-rajdhani font-bold text-2xl text-foreground">
+      <div className="absolute bottom-[-15%] font-rajdhani font-bold text-2xl text-foreground">
         {Math.round(value)}%
       </div>
     </div>
