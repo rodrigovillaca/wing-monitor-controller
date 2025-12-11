@@ -135,12 +135,15 @@
   --neu-base: #1a1d24;
   --neu-shadow-dark: #14161b;
   --neu-shadow-light: #20242d;
+  --neu-color: #d0cec4;
+
   }
 }
 
 @layer utilities {
   .bg-neu-base {
     background-color: var(--neu-base);
+    color: var(--neu-color);
   }
 
   .neu-flat {
@@ -178,6 +181,7 @@
                 -5px -5px 10px var(--neu-shadow-light);
     border-radius: 1rem;
     transition: all 0.2s ease;
+    color:  var(--neu-color);
   }
   .neu-btn:active, .neu-btn.active {
     background: var(--neu-base);
