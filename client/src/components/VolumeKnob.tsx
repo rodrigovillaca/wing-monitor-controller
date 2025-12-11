@@ -53,7 +53,7 @@ export function VolumeKnob({ value, onChange, size = 200, className }: VolumeKno
 
   return (
     <div 
-      className={cn("knob-container select-none", className)}
+      className={cn("knob-container select-none relative flex items-center justify-center", className)}
       style={{ width: size, height: size }}
     >
       {/* Tick Marks */}
@@ -78,7 +78,7 @@ export function VolumeKnob({ value, onChange, size = 200, className }: VolumeKno
       <div
         ref={knobRef}
         data-testid="volume-knob"
-        className="knob-dial flex items-center justify-center neu-convex rounded-full"
+        className="knob-dial flex items-center justify-center neu-convex !rounded-full"
         style={{ 
           width: size * 0.7, 
           height: size * 0.7,
