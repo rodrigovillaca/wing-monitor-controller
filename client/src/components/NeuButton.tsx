@@ -34,7 +34,7 @@ export function NeuButton({
       )} />
       
       {/* Icon */}
-      {icon && <div className="mb-2 text-foreground/80">{icon}</div>}
+      {icon && <div className="mb-2 text-foreground">{icon}</div>}
       
       {/* Label */}
       <span className="font-rajdhani font-bold text-lg uppercase tracking-wider text-foreground">
@@ -43,7 +43,7 @@ export function NeuButton({
       
       {/* Sub Label */}
       {subLabel && (
-        <span className="font-rajdhani text-xs text-muted-foreground mt-1">
+        <span className="font-rajdhani text-xs text-foreground/80 mt-1">
           {subLabel}
         </span>
       )}

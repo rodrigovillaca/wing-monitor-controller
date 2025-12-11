@@ -147,19 +147,19 @@ export default function MonitorController() {
 
         {/* Header / Branding */}
         <div className="col-span-12 flex justify-between items-center mb-4 border-b border-gray-300/30 pb-4">
-          <h1 className="font-rajdhani font-bold text-3xl tracking-[0.2em] text-foreground/80">
+          <h1 className="font-rajdhani font-bold text-3xl tracking-[0.2em] text-foreground">
             WING <span className="text-accent">MONITOR</span>
           </h1>
           <div className="flex gap-2 items-center">
             {isConnected ? (
               <>
                 <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#48bb78]" />
-                <span className="font-rajdhani text-xs text-muted-foreground">ONLINE</span>
+                <span className="font-rajdhani text-xs text-foreground/80">ONLINE</span>
               </>
             ) : (
               <>
                 <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_5px_#f56565]" />
-                <span className="font-rajdhani text-xs text-muted-foreground">OFFLINE</span>
+                <span className="font-rajdhani text-xs text-foreground/80">OFFLINE</span>
               </>
             )}
           </div>
@@ -167,7 +167,7 @@ export default function MonitorController() {
 
         {/* Left Section: Inputs */}
         <div className="col-span-3 flex flex-col gap-4">
-          <h2 className="font-rajdhani font-semibold text-muted-foreground tracking-widest mb-2">SOURCES</h2>
+          <h2 className="font-rajdhani font-semibold text-foreground/80 tracking-widest mb-2">SOURCES</h2>
           {inputs.length > 0 ? inputs.map((input) => (
             <NeuButton
               key={input.id}
@@ -186,7 +186,7 @@ export default function MonitorController() {
           {auxInputs.length > 0 && (
             <>
               <div className="h-4" /> {/* Spacer */}
-              <h2 className="font-rajdhani font-semibold text-muted-foreground tracking-widest mb-2">AUX INPUTS</h2>
+              <h2 className="font-rajdhani font-semibold text-foreground/80 tracking-widest mb-2">AUX INPUTS</h2>
               {auxInputs.map((input) => (
                 <NeuButton
                   key={`aux-${input.id}`}
@@ -274,7 +274,7 @@ export default function MonitorController() {
 
         {/* Right Section: Outputs */}
         <div className="col-span-3 flex flex-col gap-4">
-          <h2 className="font-rajdhani font-semibold text-muted-foreground tracking-widest mb-2 text-right">SPEAKERS</h2>
+          <h2 className="font-rajdhani font-semibold text-foreground/80 tracking-widest mb-2 text-right">SPEAKERS</h2>
           {outputs.length > 0 ? outputs.map((output) => (
             <NeuButton
               key={output.id}
