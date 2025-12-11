@@ -153,6 +153,10 @@ export class WingMonitorController extends EventEmitter {
 
   // --- Public Control Methods ---
 
+  public getState(): MonitorState {
+    return { ...this.state };
+  }
+
   public setVolume(percent: number) {
     this.state.mainLevel = Math.max(0, Math.min(100, percent));
     this.emitStateChange();
