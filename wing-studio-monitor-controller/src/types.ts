@@ -11,7 +11,8 @@ export interface AudioChannel {
 }
 
 export interface SubwooferConfig extends AudioChannel {
-  crossover?: number; // Frequency in Hz
+  // Crossover frequency is handled manually on the console
+  // This config just enables/disables the subwoofer matrix
 }
 
 export interface WingMonitorConfig {

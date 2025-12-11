@@ -16,7 +16,7 @@ This project consists of two main components:
 -   **Hardware-like UI**: Realistic volume knob, tactile buttons, and LED indicators.
 -   **Input Source Selection**: Switch between multiple sources (DAW, Reference, Client, etc.).
 -   **Speaker Switching**: Toggle between Main Monitors, Nearfields, and Mini Cubes.
--   **Subwoofer Control**: Enable/disable subwoofer with automatic crossover application to main speakers.
+-   **Subwoofer Control**: Enable/disable subwoofer. **Note:** Crossover EQ must be configured manually on the console; this app simply toggles the EQ on/off on the main speakers when the sub is active.
 -   **Monitor Functions**:
     -   **Dim**: Attenuate volume by 20dB.
     -   **Mute**: Cut all audio.
@@ -42,6 +42,7 @@ wing-monitor-controller-web/
 │   │   ├── index.ts                # Main Controller Class
 │   │   └── types.ts                # TypeScript Interfaces
 │   └── package.json
+├── config.ts                       # Main Configuration File
 └── package.json                    # Root configuration
 ```
 
@@ -67,11 +68,17 @@ wing-monitor-controller-web/
     pnpm install
     ```
 
-3.  Configure your Wing IP:
-    Edit `server/index.ts` or set environment variables:
-    ```bash
-    export WING_IP="192.168.1.70"
-    export WING_PORT="10024"
+3.  **Configuration**:
+    Open `config.ts` in the root directory and update the settings:
+    ```typescript
+    export const config: WingMonitorConfig = {
+      network: {
+        ipAddress: '192.168.1.70', // Your WING's IP
+        wingPort: 10024,
+        localPort: 9000,
+      },
+      // ... Define your inputs and outputs here
+    };
     ```
 
 ### Running Development Mode
@@ -86,12 +93,7 @@ Open [http://localhost:3000](http://localhost:3000) in your browser.
 
 ### Mock Mode (No Hardware Required)
 
-To test the UI without a physical console, enable Mock Mode:
-
-```bash
-export MOCK_MODE=true
-npm run dev
-```
+To test the UI without a physical console, set `MOCK_MODE = true` in `config.ts`.
 
 ## Library Usage
 
@@ -99,12 +101,9 @@ The core logic is available as a standalone library in `wing-studio-monitor-cont
 
 ```typescript
 import { WingMonitorController } from './wing-studio-monitor-controller';
+import { config } from '../config';
 
-const controller = new WingMonitorController({
-  network: { ipAddress: '192.168.1.70' },
-  monitorMain: { path: '/main/4' },
-  // ... config
-});
+const controller = new WingMonitorController(config);
 
 controller.connect();
 controller.setVolume(80); // Set volume to 80%

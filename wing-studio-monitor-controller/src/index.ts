@@ -367,21 +367,14 @@ export class WingMonitorController extends EventEmitter {
 
   private applyCrossoverToSpeakers(enabled: boolean) {
     // When sub is on, enable High Pass Filter (EQ) on active speakers
+    // We assume the EQ is already configured as a High Pass Filter on the console
+    // We just toggle the EQ on/off
     const activeOutput = this.config.monitorMatrixOutputs[this.state.activeOutputIndex];
     if (activeOutput) {
       const mtxNum = this.extractIndexFromPath(activeOutput.path);
       if (mtxNum) {
         // Enable/Disable EQ
         this.sendOsc(`/mtx/${mtxNum}/eq/on`, [{ type: 'i', value: enabled ? 1 : 0 }]);
-        
-        // If enabled, ensure it's a High Pass
-        if (enabled && this.config.subwoofer?.crossover) {
-          // Set Low Cut / High Pass frequency
-          // /mtx/1/eq/lc/f (if exists) or use band 1 as HPF
-          // Docs: /mtx/1/eq/hf, /mtx/1/eq/lf
-          // Let's use /mtx/1/eq/lf (Low Frequency)
-          this.sendOsc(`/mtx/${mtxNum}/eq/lf`, [{ type: 'f', value: this.config.subwoofer.crossover }]);
-        }
       }
     }
   }

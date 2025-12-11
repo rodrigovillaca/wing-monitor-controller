@@ -3,40 +3,11 @@ import { createServer } from "http";
 import path from "path";
 import { fileURLToPath } from "url";
 import { WebSocketServer, WebSocket } from "ws";
-import { WingMonitorController, WingMonitorConfig, MonitorState } from "../wing-studio-monitor-controller/src/index";
+import { WingMonitorController, MonitorState } from "../wing-studio-monitor-controller/src/index.ts";
+import { config as wingConfig, MOCK_MODE } from "../config";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-
-// Configuration for Wing Console
-// In a real app, this would come from a config file or environment variables
-const wingConfig: WingMonitorConfig = {
-  network: {
-    ipAddress: process.env.WING_IP || '192.168.1.70',
-    wingPort: parseInt(process.env.WING_PORT || '10024'),
-    localPort: parseInt(process.env.LOCAL_PORT || '9000')
-  },
-  monitorMain: {
-    path: '/main/4',
-    trim: 0
-  },
-  monitorInputs: [
-    { name: 'DAW 1-2', path: '/ch/1' },
-    { name: 'REF TRACK', path: '/ch/2' },
-    { name: 'CLIENT', path: '/ch/3' },
-    { name: 'BT AUDIO', path: '/ch/4' }
-  ],
-  monitorMatrixOutputs: [
-    { name: 'MAIN MON', path: '/mtx/1' },
-    { name: 'NEARFIELD', path: '/mtx/2' },
-    { name: 'MINI CUBE', path: '/mtx/3' }
-  ],
-  subwoofer: {
-    path: '/mtx/4',
-    trim: 0,
-    crossover: 80 // 80Hz crossover
-  }
-};
 
 async function startServer() {
   const app = express();
@@ -45,9 +16,9 @@ async function startServer() {
 
   // Initialize Wing Controller
   console.log('Initializing Wing Monitor Controller...');
-  // Enable mock mode if MOCK_MODE env var is set or if we can't connect
-  const isMockMode = process.env.MOCK_MODE === 'true' || true; // Default to true for demo
-  const wingController = new WingMonitorController(wingConfig, isMockMode);
+  console.log(`Using Config: IP=${wingConfig.network.ipAddress}, MockMode=${MOCK_MODE}`);
+  
+  const wingController = new WingMonitorController(wingConfig, MOCK_MODE);
   
   wingController.on('ready', () => {
     console.log('Wing Controller connected and ready');
@@ -153,7 +124,8 @@ async function startServer() {
     res.sendFile(path.join(staticPath, "index.html"));
   });
 
-  const port = process.env.PORT || 3000;
+  // Use port 3001 for backend to avoid conflict with Vite (3000)
+  const port = process.env.PORT || 3001;
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
