@@ -15,6 +15,7 @@ This project consists of two main components:
 
 -   **Hardware-like UI**: Realistic volume knob, tactile buttons, and LED indicators.
 -   **Input Source Selection**: Switch between multiple sources (DAW, Reference, Client, etc.).
+-   **Auxiliary Inputs**: Toggle additional inputs (Bluetooth, Mini Jack) simultaneously with the main source.
 -   **Speaker Switching**: Toggle between Main Monitors, Nearfields, and Mini Cubes.
 -   **Subwoofer Control**: Enable/disable subwoofer. **Note:** Crossover EQ must be configured manually on the console; this app simply toggles the EQ on/off on the main speakers when the sub is active.
 -   **Monitor Functions**:
@@ -79,7 +80,20 @@ wing-monitor-controller-web/
         retryAttempts: 3,       // Optional: Retries for failed commands
         retryDelay: 100,        // Optional: Delay in ms between retries
       },
-      // ... Define your inputs and outputs here
+      monitorInputs: [
+        { name: 'DAW 1-2', path: '/ch/1' },
+        { name: 'REF TRACK', path: '/ch/2' },
+      ],
+      // Optional: Auxiliary Inputs (can be active simultaneously with main input)
+      auxInputs: [
+        { name: 'BLUETOOTH', path: '/aux/1' },
+        { name: 'MINI JACK', path: '/aux/2' },
+      ],
+      monitorMatrixOutputs: [
+        { name: 'MAIN MON', path: '/mtx/1' },
+        { name: 'NEARFIELD', path: '/mtx/2' },
+      ],
+      // ...
     };
     ```
 

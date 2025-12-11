@@ -20,21 +20,21 @@ async function startServer() {
   
   const wingController = new WingMonitorController(wingConfig, MOCK_MODE);
   
-  wingController.on('ready', () => {
-    console.log('Wing Controller connected and ready');
-    broadcastState(wingController.getState());
-  });
+  // wingController.on('ready', () => {
+  //   console.log('Wing Controller connected and ready');
+  //   broadcastState(wingController.getState());
+  // });
 
-  wingController.on('error', (err) => {
-    console.error('Wing Controller Error:', err);
-  });
+  // wingController.on('error', (err: any) => {
+  //   console.error('Wing Controller Error:', err);
+  // });
 
-  wingController.on('stateChanged', (state) => {
-    broadcastState(state);
-  });
+  // wingController.on('stateChanged', (state: any) => {
+  //   broadcastState(state);
+  // });
 
-  // Start OSC connection
-  wingController.connect();
+  // Start OSC connection (Already connected in constructor)
+  // wingController.connect();
 
   // WebSocket handling
   wss.on('connection', (ws) => {
@@ -51,6 +51,7 @@ async function startServer() {
       type: 'CONFIG_UPDATE',
       payload: {
         inputs: wingConfig.monitorInputs.map((i, idx) => ({ name: i.name || `Input ${idx+1}`, id: idx })),
+        auxInputs: wingConfig.auxInputs ? wingConfig.auxInputs.map((i, idx) => ({ name: i.name || `Aux ${idx+1}`, id: idx })) : [],
         outputs: wingConfig.monitorMatrixOutputs.map((o, idx) => ({ name: o.name || `Output ${idx+1}`, id: idx }))
       }
     }));
@@ -93,16 +94,19 @@ async function startServer() {
         wingController.setMono(data.payload);
         break;
       case 'SET_INPUT':
-        wingController.setInputSource(data.payload);
+        wingController.setInput(data.payload);
         break;
       case 'SET_OUTPUT':
-        wingController.setOutputSpeaker(data.payload);
+        wingController.setOutput(data.payload);
         break;
       case 'SET_SUBWOOFER':
         wingController.setSubwoofer(data.payload);
         break;
+      case 'TOGGLE_AUX':
+        wingController.toggleAuxInput(data.payload);
+        break;
       case 'SET_POLARITY':
-        wingController.setPolarity(data.payload);
+        // wingController.setPolarity(data.payload);
         break;
       case 'SET_TALKBACK':
         // Talkback logic not fully implemented in library yet, but we can track state

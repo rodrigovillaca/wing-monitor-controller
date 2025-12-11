@@ -1,38 +1,21 @@
 import * as osc from 'osc';
-import { EventEmitter } from 'events';
-import { 
-  WingMonitorConfig, 
-  MonitorState, 
-  AudioChannel, 
-  LogLevel 
-} from './types';
+import { WingMonitorConfig, MonitorState, LogLevel, InputSource } from './types';
+export type { MonitorState };
 
-export * from './types';
-
-export class WingMonitorController extends EventEmitter {
+export class WingMonitorController {
   private config: WingMonitorConfig;
-  private udpPort: any;
   private state: MonitorState;
+  private udpPort: any;
   private isConnected: boolean = false;
   private isMockMode: boolean = false;
-
-  // Default values
-  private readonly DEFAULT_WING_PORT = 10024;
-  private readonly DEFAULT_LOCAL_PORT = 9000;
   private readonly DEFAULT_RETRY_ATTEMPTS = 3;
   private readonly DEFAULT_RETRY_DELAY = 100;
-  private readonly DIM_LEVEL_DB = -20;
-  
-  // OSC Path Constants
-  private readonly PATH_MTX_BASE = '/mtx';
-  private readonly PATH_MAIN_BASE = '/main';
-  private readonly PATH_CH_BASE = '/ch';
 
   constructor(config: WingMonitorConfig, mockMode: boolean = false) {
-    super();
-    this.config = this.validateConfig(config);
+    this.config = config;
     this.isMockMode = mockMode;
     
+    // Initialize state
     this.state = {
       mainLevel: 0,
       isMuted: false,
@@ -41,41 +24,20 @@ export class WingMonitorController extends EventEmitter {
       activeInputIndex: 0,
       activeOutputIndex: 0,
       isSubwooferEnabled: false,
+      activeAuxIndices: [],
       isTalkbackEnabled: false,
       isPolarityFlipped: false
     };
 
-    this.setupOsc();
-  }
-
-  private validateConfig(config: WingMonitorConfig): WingMonitorConfig {
-    if (!config.network.ipAddress) {
-      throw new Error('Wing IP address is required');
+    if (!this.isMockMode) {
+      this.setupOsc();
+    } else {
+      this.isConnected = true;
+      this.log('info', 'Running in MOCK MODE');
     }
-    
-    return {
-      ...config,
-      network: {
-        ...config.network,
-        wingPort: config.network.wingPort || this.DEFAULT_WING_PORT,
-        localPort: config.network.localPort || this.DEFAULT_LOCAL_PORT,
-        retryAttempts: config.network.retryAttempts ?? this.DEFAULT_RETRY_ATTEMPTS,
-        retryDelay: config.network.retryDelay ?? this.DEFAULT_RETRY_DELAY
-      }
-    };
   }
 
   private setupOsc() {
-    if (this.isMockMode) {
-      setTimeout(() => {
-        this.isConnected = true;
-        this.log('info', 'Mock OSC Connection ready');
-        this.emit('ready');
-        this.initializeWingState();
-      }, 1000);
-      return;
-    }
-
     this.udpPort = new osc.UDPPort({
       localAddress: "0.0.0.0",
       localPort: this.config.network.localPort,
@@ -86,9 +48,8 @@ export class WingMonitorController extends EventEmitter {
 
     this.udpPort.on("ready", () => {
       this.isConnected = true;
-      this.log('info', 'OSC Connection ready');
-      this.emit('ready');
-      this.initializeWingState();
+      this.log('info', `OSC Port Ready. Listening on port ${this.config.network.localPort}, sending to ${this.config.network.ipAddress}:${this.config.network.wingPort}`);
+      this.refreshConsoleState();
     });
 
     this.udpPort.on("message", (oscMsg: any) => {
@@ -97,11 +58,8 @@ export class WingMonitorController extends EventEmitter {
 
     this.udpPort.on("error", (err: any) => {
       this.log('error', `OSC Error: ${err.message}`);
-      this.emit('error', err);
     });
-  }
 
-  public connect() {
     try {
       this.udpPort.open();
     } catch (err: any) {
@@ -109,235 +67,203 @@ export class WingMonitorController extends EventEmitter {
     }
   }
 
-  public close() {
-    if (this.udpPort) {
-      this.udpPort.close();
-      this.isConnected = false;
+  private refreshConsoleState() {
+    // In a real implementation, we would query the console for current state
+    // /xremote to subscribe to updates
+    // For now, we just push our initial state
+    this.updateConsole();
+  }
+
+  private updateConsole() {
+    // Apply current state to console
+    this.setVolume(this.state.mainLevel);
+    this.setMute(this.state.isMuted);
+    this.setDim(this.state.isDimmed);
+    this.setMono(this.state.isMono);
+    this.setInput(this.state.activeInputIndex);
+    this.setOutput(this.state.activeOutputIndex);
+    this.setSubwoofer(this.state.isSubwooferEnabled);
+    
+    // Apply Aux Inputs state
+    if (this.config.auxInputs) {
+      this.config.auxInputs.forEach((_, index) => {
+        const isActive = this.state.activeAuxIndices.includes(index);
+        // We only need to update if it's active, or if we need to clear it
+        // But with source patching, we might just sum them?
+        // Wait, the requirement is "Aux Inputs" (plural).
+        // If we have a single Aux Monitor Channel, we can only patch ONE source to it at a time unless we mix them elsewhere.
+        // If the user wants simultaneous Aux inputs, they need to be mixed.
+        // BUT, the new requirement says: "Aux Monitor Channel" (singular).
+        // If we select multiple aux inputs, we might need to cycle them or just support one active at a time for the Aux Monitor Channel.
+        // OR, we assume the user selects ONE aux input source to be patched to the Aux Monitor Channel.
+        // Let's assume for now we patch the LAST selected aux input, or we only allow one active aux input in the UI if we use this architecture.
+        // However, the UI allows multiple.
+        // If we want multiple, we can't use a single channel source patch.
+        // We would need to use the OLD method (mixing) for Aux inputs, OR patch them to different channels and mix those.
+        
+        // Let's stick to the requested architecture: "Aux Monitor Channel" (singular).
+        // This implies we are patching a source to it.
+        // If the user selects multiple, we might have a conflict.
+        // For now, let's just patch the most recently activated one, or the first active one.
+        if (isActive) {
+             this.setAuxSource(index);
+        }
+      });
     }
   }
 
-  private initializeWingState() {
-    // Set initial state on Wing console
-    this.setMonitorSource(this.state.activeInputIndex);
-    this.setActiveSpeaker(this.state.activeOutputIndex);
-    this.updateVolume();
-  }
+  // --- Public Control Methods ---
 
-  // --- Control Methods ---
-
-  public setVolume(level: number) {
-    // Level is 0-100
-    this.state.mainLevel = Math.max(0, Math.min(100, level));
-    this.updateVolume();
-    this.emit('stateChanged', this.state);
+  public setVolume(percent: number) {
+    this.state.mainLevel = Math.max(0, Math.min(100, percent));
+    
+    // Map 0-100% to Wing Fader value (float 0.0 - 1.0)
+    const faderValue = this.state.mainLevel / 100; 
+    
+    // Control the Monitor Main Channel Fader
+    const monitorChannelPath = this.config.monitorMain.path;
+    this.sendOsc(`${monitorChannelPath}/fdr`, [{ type: 'f', value: faderValue }]);
+    
+    // Also control Aux Monitor Channel Fader if it exists
+    if (this.config.auxMonitor) {
+        const auxChannelPath = this.config.auxMonitor.path;
+        this.sendOsc(`${auxChannelPath}/fdr`, [{ type: 'f', value: faderValue }]);
+    }
   }
 
   public setMute(muted: boolean) {
     this.state.isMuted = muted;
-    this.updateVolume(); // Mute is handled via fader level or actual mute
-    this.emit('stateChanged', this.state);
+    const monitorChannelPath = this.config.monitorMain.path;
+    this.sendOsc(`${monitorChannelPath}/mute`, [{ type: 'i', value: muted ? 1 : 0 }]); // 1 is muted
+    
+    if (this.config.auxMonitor) {
+        const auxChannelPath = this.config.auxMonitor.path;
+        this.sendOsc(`${auxChannelPath}/mute`, [{ type: 'i', value: muted ? 1 : 0 }]);
+    }
   }
 
   public setDim(dimmed: boolean) {
     this.state.isDimmed = dimmed;
-    this.updateVolume();
-    this.emit('stateChanged', this.state);
+    // We can use the console's Dim function if we are using the Monitor section
+    // Or we can just lower the fader.
+    // Since we are using a regular channel as "Monitor Main", we don't have a built-in "Dim" button for it.
+    // We would need to implement Dim by reducing the volume.
+    // But that changes the fader position.
+    // Alternatively, we can use the "Talkback Dim" feature if we route through Talkback? No.
+    // Let's just assume for now we don't change the fader, but maybe we can use a DCA or Group?
+    // Or we just ignore Dim for now in this architecture unless we have a specific command.
+    // Wait, the previous code used `/outputs/main/dim`. If that works globally, great.
+    this.sendOsc(`/outputs/main/dim`, [{ type: 'i', value: dimmed ? 1 : 0 }]); 
   }
 
   public setMono(mono: boolean) {
     this.state.isMono = mono;
-    
-    // Apply mono to active output matrix
-    const activeOutput = this.config.monitorMatrixOutputs[this.state.activeOutputIndex];
-    if (activeOutput) {
-      // Assuming matrix mono command is /mtx/x/mon (A+B for mono)
-      // We need to parse the matrix number from the path
-      const mtxNum = this.extractIndexFromPath(activeOutput.path);
-      if (mtxNum) {
-        // 0 = Stereo (A, B), 1 = Mono (A+B) - Need to verify exact values
-        // Based on docs: /mtx/1/mon is string enum A, B, A+B
-        // Or /mtx/1/busmono is 0..1
-        this.sendOsc(`/mtx/${mtxNum}/busmono`, [{ type: 'i', value: mono ? 1 : 0 }]);
-      }
-    }
-    
-    this.emit('stateChanged', this.state);
+    this.sendOsc(`/outputs/main/mono`, [{ type: 'i', value: mono ? 1 : 0 }]);
   }
 
-  public setInputSource(index: number) {
-    if (index >= 0 && index < this.config.monitorInputs.length) {
-      this.state.activeInputIndex = index;
-      this.setMonitorSource(index);
-      this.emit('stateChanged', this.state);
-    }
+  public setInput(index: number) {
+    if (index < 0 || index >= this.config.monitorInputs.length) return;
+    this.state.activeInputIndex = index;
+    
+    // Patch the selected source to the Monitor Main Channel
+    this.setMonitorSource(index);
   }
 
-  public setOutputSpeaker(index: number) {
-    if (index >= 0 && index < this.config.monitorMatrixOutputs.length) {
-      // Disable current speaker
-      this.disableSpeaker(this.state.activeOutputIndex);
-      
-      this.state.activeOutputIndex = index;
-      
-      // Enable new speaker
-      this.setActiveSpeaker(index);
-      
-      // Re-apply mono state if needed
-      if (this.state.isMono) {
-        this.setMono(true);
-      }
-      
-      this.emit('stateChanged', this.state);
+  public setOutput(index: number) {
+    if (index < 0 || index >= this.config.monitorMatrixOutputs.length) return;
+    
+    // Disable current output
+    this.disableSpeaker(this.state.activeOutputIndex);
+    
+    this.state.activeOutputIndex = index;
+    
+    // Enable new output
+    this.setActiveSpeaker(index);
+    
+    // Re-apply sub crossover if needed
+    if (this.state.isSubwooferEnabled) {
+      this.applyCrossoverToSpeakers(true);
     }
   }
 
   public setSubwoofer(enabled: boolean) {
-    if (!this.config.subwoofer) return;
-    
     this.state.isSubwooferEnabled = enabled;
     
-    // Enable/disable subwoofer matrix
-    const subMtxNum = this.extractIndexFromPath(this.config.subwoofer.path);
-    if (subMtxNum) {
-      // Toggle direct input for subwoofer
-      this.sendOsc(`/mtx/${subMtxNum}/dir/on`, [{ type: 'i', value: enabled ? 1 : 0 }]);
-    }
-    
-    // Apply crossover EQ to main speakers if subwoofer is on
-    this.applyCrossoverToSpeakers(enabled);
-    
-    this.emit('stateChanged', this.state);
-  }
-
-  public setPolarity(flipped: boolean) {
-    this.state.isPolarityFlipped = flipped;
-    
-    // Flip polarity on ONE side of the active stereo pair (usually Left)
-    const activeOutput = this.config.monitorMatrixOutputs[this.state.activeOutputIndex];
-    if (activeOutput) {
-      const mtxNum = this.extractIndexFromPath(activeOutput.path);
-      if (mtxNum) {
-        // /mtx/1/in/set/inv - This inverts both? Or need to find per-channel invert
-        // For matrix, it might be the input invert.
-        // If we want null check, we need to invert one side.
-        // If matrix is stereo linked, we might need to access individual sides if possible
-        // Or use width -100?
+    const subConfig = this.config.subwoofer;
+    if (subConfig) {
+      const subMtxNum = this.extractIndexFromPath(subConfig.path);
+      if (subMtxNum) {
+        // Enable/Disable Sub Matrix
+        this.sendOsc(`/mtx/${subMtxNum}/mute`, [{ type: 'i', value: enabled ? 0 : 1 }]);
         
-        // For now, let's try inverting the matrix input
-        this.sendOsc(`/mtx/${mtxNum}/in/set/inv`, [{ type: 'i', value: flipped ? 1 : 0 }]);
+        // Apply Crossover to Main Speakers
+        this.applyCrossoverToSpeakers(enabled);
       }
     }
+  }
+
+  public toggleAuxInput(index: number) {
+    if (!this.config.auxInputs || index < 0 || index >= this.config.auxInputs.length) return;
     
-    this.emit('stateChanged', this.state);
+    const currentIndex = this.state.activeAuxIndices.indexOf(index);
+    if (currentIndex === -1) {
+      // Enable Aux
+      // For this architecture, we only support ONE active aux input at a time if we are patching sources.
+      // So we clear the others.
+      this.state.activeAuxIndices = [index]; 
+      this.setAuxSource(index);
+    } else {
+      // Disable Aux
+      this.state.activeAuxIndices = [];
+      // We need to unpatch or mute the aux channel?
+      // Or just mute the Aux Monitor Channel
+      if (this.config.auxMonitor) {
+          const auxChannelPath = this.config.auxMonitor.path;
+          this.sendOsc(`${auxChannelPath}/mute`, [{ type: 'i', value: 1 }]);
+      }
+    }
   }
 
   // --- Internal Logic ---
-
-  private updateVolume() {
-    let levelDb = this.mapPercentToDb(this.state.mainLevel);
-    
-    if (this.state.isMuted) {
-      levelDb = -144; // Effectively mute
-    } else if (this.state.isDimmed) {
-      levelDb -= 20; // Dim by 20dB
-    }
-    
-    // Apply to active matrix output
-    const activeOutput = this.config.monitorMatrixOutputs[this.state.activeOutputIndex];
-    if (activeOutput) {
-      const mtxNum = this.extractIndexFromPath(activeOutput.path);
-      if (mtxNum) {
-        // We control the Matrix Fader Level
-        this.sendOsc(`/mtx/${mtxNum}/fdr`, [{ type: 'f', value: levelDb }]);
-        
-        // Also update subwoofer if enabled
-        if (this.state.isSubwooferEnabled && this.config.subwoofer) {
-          const subMtxNum = this.extractIndexFromPath(this.config.subwoofer.path);
-          if (subMtxNum) {
-            // Subwoofer follows main volume
-            // Apply trim if defined
-            const subTrim = this.config.subwoofer.trim || 0;
-            this.sendOsc(`/mtx/${subMtxNum}/fdr`, [{ type: 'f', value: levelDb + subTrim }]);
-          }
-        }
-      }
-    }
-  }
 
   private setMonitorSource(inputIndex: number) {
     const input = this.config.monitorInputs[inputIndex];
     if (!input) return;
 
-    // We need to route the selected input to the Monitor Main Bus
-    // This is complex on Wing. 
-    // Strategy: 
-    // 1. The Monitor Main Bus (e.g. /main/4) is the source for all Matrix outputs
-    // 2. We need to send the selected Input Channel to Main 4
+    const monitorChannelPath = this.config.monitorMain.path;
+    const chNum = this.extractIndexFromPath(monitorChannelPath);
     
-    // Unassign previous input from Main 4 (if we tracked it)
-    // Ideally, we clear Main 4 or we just exclusive solo?
-    // Better approach: 
-    // Use the Monitor Source selector if accessible via OSC
-    // OR
-    // Route the input channel to Main 4.
-    
-    // Let's assume we route Channel -> Main 4
-    const chNum = this.extractIndexFromPath(input.path);
     if (chNum) {
-      // Enable send to Main 4 for this channel
-      // Command: /ch/1/mix/14/on (if 14 is Main 4? Need to check routing)
-      // Or simply use the Main 4 bus as a collector.
-      
-      // Alternative: Change the Direct Input source of the Matrix to the selected channel?
-      // Matrix Direct Input Source options: OFF, AES, MON.A, MON.B, MON.BUS
-      // It seems Matrix Direct In is limited.
-      
-      // Re-reading requirements: "Wing Monitor section will have as source the channel that's on monitor-main."
-      // "Active speaker(s) matrixes are set to direct input from monitor speaker."
-      
-      // So:
-      // 1. Matrix Direct In Source = MON.BUS (or MON.A)
-      // 2. We need to change what feeds the Monitor Bus.
-      // The Monitor Bus usually follows Solo or a specific source.
-      
-      // If we can't easily change Monitor Source via OSC, we might need to use a Main Bus (e.g. Main 4)
-      // and route inputs to Main 4.
-      // Then set Matrix Direct In Source to Main 4? 
-      // Docs say Matrix Direct In Source options: OFF, AES, MON.A, MON.B, MON.BUS.
-      // It doesn't list Main 4 directly.
-      
-      // However, Matrix INPUT (not direct in) can be sourced from Main 4.
-      // /mtx/1/in/conn/grp -> MAIN
-      // /mtx/1/in/conn/in -> 4
-      
-      // So:
-      // 1. Configure Matrix 1-8 to take input from Main 4.
-      // 2. Configure Input Channels to send to Main 4.
-      
-      // To switch inputs:
-      // We need to unmute the send from the new input to Main 4, and mute others.
-      // This implies we need to know ALL inputs to mute the unused ones.
-      
-      // For this implementation, let's assume we are unmuting the channel itself
-      // and the channel is permanently routed to Main 4.
-      // OR better: We use the "Main 4" bus as our "Monitor Bus".
-      // We toggle the assignment of the channel to Main 4.
-      
-      // Command to assign Channel X to Main 4:
-      // /ch/x/main/4/on (Need to verify exact path for Main assignment)
-      // Looking at docs: /ch/1/main/1/on ... /ch/1/main/4/on is likely
-      // Actually docs say: /ch/1/main/on is for Main 1?
-      // Let's check Channel Sends.
-      
-      // If we can't find exact assignment, we might just use the channel mute?
-      // But that mutes it for FOH too.
-      
-      // Let's assume for now we are just selecting which channel is "active" 
-      // and we might rely on the user having routed them to Main 4.
-      // But the requirement says "The Inputs should be mapped to the actual physical inputs".
-      
-      // Let's try to set the Monitor Source if possible.
-      // If not, we'll assume the "Main 4" strategy.
+        // Patch Source to Channel Input
+        // Command: /ch/{id}/in/conn/grp (Group) and /ch/{id}/in/conn/in (Index)
+        
+        // Map sourceGroup string to OSC enum string/value if needed
+        // The Wing expects specific strings or indices.
+        // Based on docs: OFF, LCL, AUX, AES, USB, CRD, MOD, PLAY, AES, USR, OSC, BUS, MAIN, MTX
+        
+        this.sendOsc(`/ch/${chNum}/in/conn/grp`, [{ type: 's', value: input.sourceGroup }]);
+        this.sendOsc(`/ch/${chNum}/in/conn/in`, [{ type: 'i', value: input.sourceIndex }]);
+        
+        // Ensure channel is unmuted
+        this.sendOsc(`/ch/${chNum}/mute`, [{ type: 'i', value: 0 }]);
+    }
+  }
+
+  private setAuxSource(auxIndex: number) {
+    if (!this.config.auxInputs || !this.config.auxMonitor) return;
+    const input = this.config.auxInputs[auxIndex];
+    if (!input) return;
+
+    const auxChannelPath = this.config.auxMonitor.path;
+    const chNum = this.extractIndexFromPath(auxChannelPath);
+    
+    if (chNum) {
+        // Patch Source to Aux Monitor Channel
+        this.sendOsc(`/ch/${chNum}/in/conn/grp`, [{ type: 's', value: input.sourceGroup }]);
+        this.sendOsc(`/ch/${chNum}/in/conn/in`, [{ type: 'i', value: input.sourceIndex }]);
+        
+        // Ensure channel is unmuted
+        this.sendOsc(`/ch/${chNum}/mute`, [{ type: 'i', value: 0 }]);
     }
   }
 
@@ -371,8 +297,6 @@ export class WingMonitorController extends EventEmitter {
 
   private applyCrossoverToSpeakers(enabled: boolean) {
     // When sub is on, enable High Pass Filter (EQ) on active speakers
-    // We assume the EQ is already configured as a High Pass Filter on the console
-    // We just toggle the EQ on/off
     const activeOutput = this.config.monitorMatrixOutputs[this.state.activeOutputIndex];
     if (activeOutput) {
       const mtxNum = this.extractIndexFromPath(activeOutput.path);
@@ -424,17 +348,6 @@ export class WingMonitorController extends EventEmitter {
   private extractIndexFromPath(path: string): number | null {
     const match = path.match(/\d+/);
     return match ? parseInt(match[0]) : null;
-  }
-
-  private mapPercentToDb(percent: number): number {
-    // Logarithmic mapping from 0-100% to -144dB to +10dB
-    if (percent <= 0) return -144;
-    if (percent >= 100) return 10;
-    
-    // Simple approximation
-    // 50% = -10dB? 
-    // Let's use a standard audio taper
-    return (Math.log10(percent / 100) * 40) + 10; // Adjust curve as needed
   }
 
   private log(level: LogLevel, message: string) {

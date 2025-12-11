@@ -9,14 +9,21 @@ export const config: WingMonitorConfig = {
     retryDelay: 100,           // Delay in ms between retries
   },
   monitorMain: {
-    path: '/main/4',
+    path: '/ch/40', // Fixed channel used for Monitor Input
+    trim: 0
+  },
+  auxMonitor: {
+    path: '/aux/8', // Fixed channel used for Aux Input
     trim: 0
   },
   monitorInputs: [
-    { name: 'DAW 1-2', path: '/ch/1' },
-    { name: 'REF TRACK', path: '/ch/2' },
-    { name: 'CLIENT', path: '/ch/3' },
-    { name: 'BT AUDIO', path: '/ch/4' }
+    { name: 'DAW 1-2', sourceGroup: 'USB', sourceIndex: 1 }, // USB 1/2
+    { name: 'REF TRACK', sourceGroup: 'USB', sourceIndex: 3 }, // USB 3/4
+    { name: 'CLIENT', sourceGroup: 'AES50A', sourceIndex: 1 }, // AES50 A 1/2
+  ],
+  auxInputs: [
+    { name: 'BLUETOOTH', sourceGroup: 'AUX', sourceIndex: 1 }, // AUX 1/2
+    { name: 'MINI JACK', sourceGroup: 'AUX', sourceIndex: 3 }, // AUX 3/4
   ],
   monitorMatrixOutputs: [
     { name: 'MAIN MON', path: '/mtx/1' },

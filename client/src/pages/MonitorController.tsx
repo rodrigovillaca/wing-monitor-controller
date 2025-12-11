@@ -20,6 +20,7 @@ interface MonitorState {
   isDimmed: boolean;
   isMono: boolean;
   activeInputIndex: number;
+  activeAuxIndices: number[];
   activeOutputIndex: number;
   isSubwooferEnabled: boolean;
   isTalkbackEnabled: boolean;
@@ -38,6 +39,7 @@ export default function MonitorController() {
     isDimmed: false,
     isMono: false,
     activeInputIndex: 0,
+    activeAuxIndices: [],
     activeOutputIndex: 0,
     isSubwooferEnabled: false,
     isTalkbackEnabled: false,
@@ -45,6 +47,7 @@ export default function MonitorController() {
   });
 
   const [inputs, setInputs] = useState<ConfigItem[]>([]);
+  const [auxInputs, setAuxInputs] = useState<ConfigItem[]>([]);
   const [outputs, setOutputs] = useState<ConfigItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const wsRef = useRef<WebSocket | null>(null);
@@ -78,6 +81,7 @@ export default function MonitorController() {
             setState(data.payload);
           } else if (data.type === 'CONFIG_UPDATE') {
             setInputs(data.payload.inputs);
+            setAuxInputs(data.payload.auxInputs || []);
             setOutputs(data.payload.outputs);
           }
         } catch (e) {
@@ -115,6 +119,19 @@ export default function MonitorController() {
     if (updates.isSubwooferEnabled !== undefined) sendCommand('SET_SUBWOOFER', updates.isSubwooferEnabled);
     if (updates.isPolarityFlipped !== undefined) sendCommand('SET_POLARITY', updates.isPolarityFlipped);
     if (updates.isTalkbackEnabled !== undefined) sendCommand('SET_TALKBACK', updates.isTalkbackEnabled);
+  };
+
+  const toggleAux = (index: number) => {
+    // Optimistic update
+    setState(prev => {
+      const isActive = prev.activeAuxIndices.includes(index);
+      const newIndices = isActive 
+        ? prev.activeAuxIndices.filter(i => i !== index)
+        : [...prev.activeAuxIndices, index];
+      return { ...prev, activeAuxIndices: newIndices };
+    });
+    
+    sendCommand('TOGGLE_AUX', index);
   };
 
   return (
@@ -174,6 +191,25 @@ export default function MonitorController() {
             />
           )) : (
             <div className="text-center text-muted-foreground font-rajdhani py-8">Loading Inputs...</div>
+          )}
+
+          {/* Aux Inputs */}
+          {auxInputs.length > 0 && (
+            <>
+              <div className="h-4" /> {/* Spacer */}
+              <h2 className="font-rajdhani font-semibold text-muted-foreground tracking-widest mb-2">AUX INPUTS</h2>
+              {auxInputs.map((input) => (
+                <NeuButton
+                  key={`aux-${input.id}`}
+                  label={input.name}
+                  active={state.activeAuxIndices.includes(input.id)}
+                  onClick={() => toggleAux(input.id)}
+                  className="w-full h-16"
+                  ledColor="amber"
+                  icon={<Wifi size={18} />}
+                />
+              ))}
+            </>
           )}
         </div>
 
