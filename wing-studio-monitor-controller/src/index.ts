@@ -21,7 +21,7 @@ export class WingMonitorController extends EventEmitter {
     // Initialize state
     this.state = {
       mainLevel: 0,
-      isMuted: false,
+      isMuted: true,
       isDimmed: false,
       isMono: false,
       activeInputIndex: 0,
