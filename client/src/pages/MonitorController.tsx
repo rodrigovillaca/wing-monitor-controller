@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { VolumeKnob } from '@/components/VolumeKnob';
 import { NeuButton } from '@/components/NeuButton';
+import { StereoMeter } from '@/components/StereoMeter';
 import { 
   Mic2, 
   Speaker, 
@@ -142,23 +143,7 @@ export default function MonitorController() {
     <div className="min-h-screen bg-neu-base flex items-center justify-center p-8">
       <div className="neu-flat p-12 max-w-6xl w-full grid grid-cols-12 gap-8 relative overflow-hidden">
         
-        {/* Decorative Screws */}
-        <div className="absolute top-4 left-4 w-4 h-4 rounded-full bg-neu-base shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)] flex items-center justify-center">
-          <div className="w-full h-[1px] bg-gray-400 rotate-45" />
-          <div className="h-full w-[1px] bg-gray-400 rotate-45 absolute" />
-        </div>
-        <div className="absolute top-4 right-4 w-4 h-4 rounded-full bg-neu-base shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)] flex items-center justify-center">
-          <div className="w-full h-[1px] bg-gray-400 rotate-45" />
-          <div className="h-full w-[1px] bg-gray-400 rotate-45 absolute" />
-        </div>
-        <div className="absolute bottom-4 left-4 w-4 h-4 rounded-full bg-neu-base shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)] flex items-center justify-center">
-          <div className="w-full h-[1px] bg-gray-400 rotate-45" />
-          <div className="h-full w-[1px] bg-gray-400 rotate-45 absolute" />
-        </div>
-        <div className="absolute bottom-4 right-4 w-4 h-4 rounded-full bg-neu-base shadow-[inset_2px_2px_4px_var(--neu-shadow-dark),inset_-2px_-2px_4px_var(--neu-shadow-light)] flex items-center justify-center">
-          <div className="w-full h-[1px] bg-gray-400 rotate-45" />
-          <div className="h-full w-[1px] bg-gray-400 rotate-45 absolute" />
-        </div>
+
 
         {/* Header / Branding */}
         <div className="col-span-12 flex justify-between items-center mb-4 border-b border-gray-300/30 pb-4">
@@ -248,8 +233,9 @@ export default function MonitorController() {
             />
           </div>
 
-          {/* Big Knob */}
-          <div className="py-8">
+          {/* Big Knob & Meters */}
+          <div className="py-4 flex flex-col items-center gap-8">
+            <StereoMeter left={state.mainLevel / 100} right={state.mainLevel / 100} />
             <VolumeKnob 
               value={state.mainLevel} 
               onChange={(val) => updateState({ mainLevel: val })}
