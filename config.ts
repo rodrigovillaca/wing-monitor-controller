@@ -21,6 +21,9 @@ export const config: WingMonitorConfig = {
     { name: 'DAW 1-2', sourceGroup: 'USB', sourceIndex: 1 },   // USB 1/2
     { name: 'REF TRACK', sourceGroup: 'USB', sourceIndex: 3 }, // USB 3/4
     { name: 'CLIENT', sourceGroup: 'AES50A', sourceIndex: 1 }, // AES50 A 1/2
+    // Example: Local Inputs (Microphones / Line In)
+    // { name: 'MIC 1', sourceGroup: 'LCL', sourceIndex: 1 },   // Local Input 1
+    // { name: 'LINE IN', sourceGroup: 'LCL', sourceIndex: 5 }, // Local Input 5
   ],
   // AUX INPUTS: Sources that will be patched to the Aux Monitor channel
   auxInputs: [
