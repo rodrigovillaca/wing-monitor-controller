@@ -1,200 +1,130 @@
 @import "tailwindcss";
-@import "tw-animate-css";
+
+@plugin "tailwindcss-animate";
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+
   --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  
+
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
-  
+
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  
+
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
-  
+
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
-  
+
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
-  
-  /* Neumorphic specific colors */
-  --color-neu-base: var(--neu-base);
-  --color-neu-shadow-light: var(--neu-shadow-light);
-  --color-neu-shadow-dark: var(--neu-shadow-dark);
-  --color-neu-pressed: var(--neu-pressed);
-  --color-led-cyan: var(--led-cyan);
-  --color-led-amber: var(--led-amber);
-  --color-led-red: var(--led-red);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --animate-accordion-down: accordion-down 0.2s ease-out;
+  --animate-accordion-up: accordion-up 0.2s ease-out;
+
+  @keyframes accordion-down {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+  @keyframes accordion-up {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
 }
 
-:root {
-  /* Neumorphic Light Theme Base */
-  --neu-base: #E0E5EC;
-  --neu-shadow-light: #ffffff;
-  --neu-shadow-dark: #a3b1c6;
-  --neu-pressed: #e0e5ec;
-  
-  --led-cyan: #00f3ff;
-  --led-amber: #ffb300;
-  --led-red: #ff3d00;
+/*
+  The default border color has changed to `currentColor` in Tailwind CSS v4,
+  so we've added these compatibility styles to make sure everything still
+  looks the same as it did with Tailwind CSS v3.
 
-  --background: var(--neu-base);
-  --foreground: #4A5568;
-  
-  --primary: #4A5568;
-  --primary-foreground: #E0E5EC;
-  
-  --secondary: #CBD5E0;
-  --secondary-foreground: #2D3748;
-  
-  --muted: #A0AEC0;
-  --muted-foreground: #718096;
-  
-  --accent: #00f3ff;
-  --accent-foreground: #1A202C;
-  
-  --destructive: #E53E3E;
-  --destructive-foreground: #E0E5EC;
-  
-  --border: #CBD5E0;
-  --input: #E0E5EC;
-  --ring: #A0AEC0;
-  
-  --radius: 0.75rem;
+  If we ever want to remove these styles, we need to add an explicit border
+  color utility to any element that depends on these defaults.
+*/
+@layer base {
+  *,
+  ::after,
+  ::before,
+  ::backdrop,
+  ::file-selector-button {
+    border-color: var(--color-gray-200, currentColor);
+  }
 }
 
-.dark {
-  /* Neumorphic Dark Theme Base */
-  --neu-base: #2D3748;
-  --neu-shadow-light: #3a475c;
-  --neu-shadow-dark: #1a202c;
-  --neu-pressed: #283141;
-  
-  --background: var(--neu-base);
-  --foreground: #E2E8F0;
-  
-  --primary: #E2E8F0;
-  --primary-foreground: #2D3748;
-  
-  --secondary: #4A5568;
-  --secondary-foreground: #E2E8F0;
-  
-  --muted: #718096;
-  --muted-foreground: #A0AEC0;
-  
-  --accent: #00f3ff;
-  --accent-foreground: #1A202C;
-  
-  --destructive: #FC8181;
-  --destructive-foreground: #2D3748;
-  
-  --border: #4A5568;
-  --input: #2D3748;
-  --ring: #4A5568;
+@layer base {
+  :root {
+    /* Force Dark Theme Variables */
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 212.7 26.8% 83.9%;
+
+    --radius: 0.5rem;
+  }
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
   body {
-    @apply bg-background text-foreground font-sans antialiased;
-    background-color: var(--neu-base);
-  }
-}
-
-@layer components {
-  .neu-flat {
-    background: var(--neu-base);
-    box-shadow: 
-      9px 9px 16px var(--neu-shadow-dark), 
-      -9px -9px 16px var(--neu-shadow-light);
-    border-radius: var(--radius);
-    border: 1px solid rgba(255,255,255,0.2);
-  }
-  
-  .neu-pressed {
-    background: var(--neu-base);
-    box-shadow: inset 6px 6px 10px 0 var(--neu-shadow-dark),
-                inset -6px -6px 10px 0 var(--neu-shadow-light);
-    border-radius: var(--radius);
-  }
-  
-  .neu-convex {
-    background: linear-gradient(145deg, #f0f5fc, #caced4);
-    box-shadow:  5px 5px 10px var(--neu-shadow-dark),
-                 -5px -5px 10px var(--neu-shadow-light);
-  }
-  
-  .neu-concave {
-    background: linear-gradient(145deg, #caced4, #f0f5fc);
-    box-shadow:  5px 5px 10px var(--neu-shadow-dark),
-                 -5px -5px 10px var(--neu-shadow-light);
-  }
-
-  .neu-btn {
-    @apply transition-all duration-200 ease-in-out active:scale-95 flex items-center justify-center;
-    background: var(--neu-base);
-    box-shadow: 
-      6px 6px 10px var(--neu-shadow-dark), 
-      -6px -6px 10px var(--neu-shadow-light);
-    border-radius: var(--radius);
-    color: var(--foreground);
-  }
-  
-  .neu-btn:active, .neu-btn.active {
-    box-shadow: inset 4px 4px 8px 0 var(--neu-shadow-dark),
-                inset -4px -4px 8px 0 var(--neu-shadow-light);
-    @apply text-accent;
-  }
-
-  .led-indicator {
-    @apply w-2 h-2 rounded-full transition-all duration-300;
-    background-color: #718096;
-    box-shadow: inset 1px 1px 2px rgba(0,0,0,0.5);
-  }
-  
-  .led-indicator.on-cyan {
-    background-color: var(--led-cyan);
-    box-shadow: 0 0 10px var(--led-cyan), 0 0 20px var(--led-cyan);
-  }
-  
-  .led-indicator.on-amber {
-    background-color: var(--led-amber);
-    box-shadow: 0 0 10px var(--led-amber), 0 0 20px var(--led-amber);
-  }
-  
-  .led-indicator.on-red {
-    background-color: var(--led-red);
-    box-shadow: 0 0 10px var(--led-red), 0 0 20px var(--led-red);
-  }
-
-  .knob-container {
-    @apply relative rounded-full flex items-center justify-center;
-    background: var(--neu-base);
-    box-shadow: 
-      12px 12px 24px var(--neu-shadow-dark), 
-      -12px -12px 24px var(--neu-shadow-light);
-  }
-  
-  .knob-dial {
-    @apply rounded-full relative cursor-grab active:cursor-grabbing;
-    background: linear-gradient(145deg, #f0f5fc, #caced4);
-    box-shadow:  5px 5px 10px var(--neu-shadow-dark),
-                 -5px -5px 10px var(--neu-shadow-light);
+    @apply bg-background text-foreground;
   }
 }
