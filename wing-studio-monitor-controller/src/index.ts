@@ -19,6 +19,8 @@ export class WingMonitorController extends EventEmitter {
   // Default values
   private readonly DEFAULT_WING_PORT = 10024;
   private readonly DEFAULT_LOCAL_PORT = 9000;
+  private readonly DEFAULT_RETRY_ATTEMPTS = 3;
+  private readonly DEFAULT_RETRY_DELAY = 100;
   private readonly DIM_LEVEL_DB = -20;
   
   // OSC Path Constants
@@ -56,7 +58,9 @@ export class WingMonitorController extends EventEmitter {
       network: {
         ...config.network,
         wingPort: config.network.wingPort || this.DEFAULT_WING_PORT,
-        localPort: config.network.localPort || this.DEFAULT_LOCAL_PORT
+        localPort: config.network.localPort || this.DEFAULT_LOCAL_PORT,
+        retryAttempts: config.network.retryAttempts ?? this.DEFAULT_RETRY_ATTEMPTS,
+        retryDelay: config.network.retryDelay ?? this.DEFAULT_RETRY_DELAY
       }
     };
   }
@@ -381,7 +385,7 @@ export class WingMonitorController extends EventEmitter {
 
   // --- Helper Methods ---
 
-  private sendOsc(address: string, args: any[]) {
+  private sendOsc(address: string, args: any[], attempt = 1) {
     if (!this.isConnected) return;
     
     if (this.isMockMode) {
@@ -389,12 +393,27 @@ export class WingMonitorController extends EventEmitter {
       return;
     }
 
-    this.udpPort.send({
-      address: address,
-      args: args
-    });
-    
-    this.log('debug', `Sent OSC: ${address} ${JSON.stringify(args)}`);
+    try {
+      this.udpPort.send({
+        address: address,
+        args: args
+      });
+      this.log('debug', `Sent OSC: ${address} ${JSON.stringify(args)}`);
+    } catch (err: any) {
+      this.log('error', `Failed to send OSC message (Attempt ${attempt}): ${err.message}`);
+      
+      const maxRetries = this.config.network.retryAttempts || this.DEFAULT_RETRY_ATTEMPTS;
+      const retryDelay = this.config.network.retryDelay || this.DEFAULT_RETRY_DELAY;
+
+      if (attempt <= maxRetries) {
+        this.log('warn', `Retrying OSC message to ${address} in ${retryDelay}ms...`);
+        setTimeout(() => {
+          this.sendOsc(address, args, attempt + 1);
+        }, retryDelay);
+      } else {
+        this.log('error', `Given up sending OSC message to ${address} after ${maxRetries} retries.`);
+      }
+    }
   }
 
   private handleOscMessage(msg: any) {

@@ -2,6 +2,8 @@ export interface NetworkConfig {
   ipAddress: string;
   wingPort?: number;
   localPort?: number;
+  retryAttempts?: number; // Number of retries for failed commands
+  retryDelay?: number;    // Delay in ms between retries
 }
 
 export interface AudioChannel {

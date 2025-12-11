@@ -5,6 +5,8 @@ export const config: WingMonitorConfig = {
     ipAddress: '192.168.1.70', // Replace with your WING's IP address
     wingPort: 10024,           // Default OSC port for WING
     localPort: 9000,           // Local UDP port for listening
+    retryAttempts: 3,          // Number of retries for failed commands
+    retryDelay: 100,           // Delay in ms between retries
   },
   monitorMain: {
     path: '/main/4',

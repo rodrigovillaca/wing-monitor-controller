@@ -76,6 +76,8 @@ wing-monitor-controller-web/
         ipAddress: '192.168.1.70', // Your WING's IP
         wingPort: 10024,
         localPort: 9000,
+        retryAttempts: 3,       // Optional: Retries for failed commands
+        retryDelay: 100,        // Optional: Delay in ms between retries
       },
       // ... Define your inputs and outputs here
     };
