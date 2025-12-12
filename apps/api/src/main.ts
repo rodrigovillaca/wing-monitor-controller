@@ -169,6 +169,16 @@ async function startServer() {
     }
   }
 
+  // Health check endpoint
+  app.get('/health', (_req, res) => {
+    res.json({
+      status: 'ok',
+      timestamp: new Date().toISOString(),
+      mockMode: MOCK_MODE,
+      version: '1.0.0'
+    });
+  });
+
   // Serve static files from dist/apps/web-client
   // We assume the app is run from the workspace root or the built output structure matches
   const staticPath = path.join(process.cwd(), 'dist/apps/web-client');
