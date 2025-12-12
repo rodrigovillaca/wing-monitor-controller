@@ -86,6 +86,45 @@ export function VolumeKnob({
         })}
       </div>
 
+      {/* Static dB Labels */}
+      <div className="absolute inset-0 pointer-events-none font-rajdhani text-xs text-muted-foreground font-medium">
+        {/* -∞ dB at 0% (-135deg) */}
+        <div 
+          className="absolute"
+          style={{
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%) rotate(-135deg) translateY(-460%) rotate(135deg)'
+          }}
+        >
+          -∞
+        </div>
+
+        {/* 0 dB at 75% (67.5deg) */}
+        <div 
+          className="absolute"
+          style={{
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%) rotate(67.5deg) translateY(-460%) rotate(-67.5deg)'
+          }}
+        >
+          0
+        </div>
+
+        {/* +10 dB at 100% (135deg) */}
+        <div 
+          className="absolute"
+          style={{
+            left: '50%',
+            top: '50%',
+            transform: 'translate(-50%, -50%) rotate(135deg) translateY(-460%) rotate(-135deg)'
+          }}
+        >
+          +10
+        </div>
+      </div>
+
       {/* The Knob Dial */}
       <div
         ref={knobRef}
