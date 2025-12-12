@@ -75,13 +75,14 @@ export function VolumeKnob({
           return (
             <div
               key={i}
-              className="absolute w-[1%] h-[6%] bg-gray-400 origin-center"
+              className="absolute left-1/2 top-1/2 w-[2px] h-1/2 origin-bottom"
               style={{
-                left: '50%',
-                top: '50%',
-                transform: `translate(-50%, -50%) rotate(${deg}deg) translateY(-380%)`
+                transform: `translate(-50%, -100%) rotate(${deg}deg)`
               }}
-            />
+            >
+              {/* The tick line itself, positioned at the top (outer edge) of the radius */}
+              <div className="w-full h-[12%] bg-gray-400 mt-[15%]" />
+            </div>
           );
         })}
       </div>
@@ -90,38 +91,32 @@ export function VolumeKnob({
       <div className="absolute inset-0 pointer-events-none font-rajdhani text-xs text-muted-foreground font-medium">
         {/* -∞ dB at 0% (-135deg) */}
         <div 
-          className="absolute"
+          className="absolute left-1/2 top-1/2 h-1/2 w-0 origin-bottom flex flex-col items-center justify-start"
           style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%) rotate(-135deg) translateY(-460%) rotate(135deg)'
+            transform: 'translate(-50%, -100%) rotate(-135deg)'
           }}
         >
-          -∞
+          <span style={{ transform: 'rotate(135deg)', marginTop: '-10px' }}>-∞</span>
         </div>
 
         {/* 0 dB at 75% (67.5deg) */}
         <div 
-          className="absolute"
+          className="absolute left-1/2 top-1/2 h-1/2 w-0 origin-bottom flex flex-col items-center justify-start"
           style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%) rotate(67.5deg) translateY(-460%) rotate(-67.5deg)'
+            transform: 'translate(-50%, -100%) rotate(67.5deg)'
           }}
         >
-          0
+          <span style={{ transform: 'rotate(-67.5deg)', marginTop: '-10px' }}>0</span>
         </div>
 
         {/* +10 dB at 100% (135deg) */}
         <div 
-          className="absolute"
+          className="absolute left-1/2 top-1/2 h-1/2 w-0 origin-bottom flex flex-col items-center justify-start"
           style={{
-            left: '50%',
-            top: '50%',
-            transform: 'translate(-50%, -50%) rotate(135deg) translateY(-460%) rotate(-135deg)'
+            transform: 'translate(-50%, -100%) rotate(135deg)'
           }}
         >
-          +10
+          <span style={{ transform: 'rotate(-135deg)', marginTop: '-10px' }}>+10</span>
         </div>
       </div>
 
