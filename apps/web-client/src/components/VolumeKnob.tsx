@@ -158,11 +158,7 @@ export function VolumeKnob({
           transform: `rotate(${rotation}deg)`,
           boxShadow: `5px 5px 10px var(--neu-shadow-dark), 
                      -5px -5px 10px var(--neu-shadow-light), 
-                     inset 0 0 ${value * 0.5}px rgba(6, 182, 212, ${value * 0.008})`,
-          background: `
-            radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 20%),
-            conic-gradient(from 0deg, #e5e7eb 0%, #d1d5db 25%, #e5e7eb 50%, #d1d5db 75%, #e5e7eb 100%)
-          `
+                     inset 0 0 ${value * 0.5}px rgba(6, 182, 212, ${value * 0.008})`
         }}
         onMouseDown={handleMouseDown}
       >
@@ -176,10 +172,8 @@ export function VolumeKnob({
       </div>
       
       {/* Value Display */}
-      <div className="absolute bottom-[-20%] bg-black/80 px-3 py-1 rounded border border-gray-700 shadow-[inset_0_0_4px_rgba(0,0,0,0.8)]">
-        <div className="font-mono font-bold text-lg text-cyan-400 tracking-widest drop-shadow-[0_0_2px_rgba(34,211,238,0.8)]">
-          {displayValue}
-        </div>
+      <div className="absolute bottom-[-15%] font-rajdhani font-bold text-xl text-accent tracking-wider">
+        {displayValue}
       </div>
     </div>
   );
