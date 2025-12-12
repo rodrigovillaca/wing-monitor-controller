@@ -5,6 +5,7 @@ import tailwindcss from "@tailwindcss/vite";
 import { nxViteTsPaths } from '@nx/vite/plugins/nx-tsconfig-paths.plugin';
 import { nxCopyAssetsPlugin } from '@nx/vite/plugins/nx-copy-assets.plugin';
 import path from "path";
+import { APP_CONFIG } from "../../libs/shared-models/src/index";
 
 export default defineConfig(() => ({
   root: import.meta.dirname,
@@ -15,21 +16,21 @@ export default defineConfig(() => ({
     },
   },
   server: {
-    port: 3000,
+    port: APP_CONFIG.WEB_PORT,
     host: '0.0.0.0',
     proxy: {
       '/api': {
-        target: 'http://localhost:3001',
+        target: `http://localhost:${APP_CONFIG.API_PORT}`,
         changeOrigin: true,
       },
       '/ws': {
-        target: 'ws://localhost:3001',
+        target: `ws://localhost:${APP_CONFIG.API_PORT}`,
         ws: true,
       },
     },
   },
   preview: {
-    port: 3000,
+    port: APP_CONFIG.WEB_PORT,
     host: '0.0.0.0',
   },
   plugins: [react(), tailwindcss(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
@@ -38,7 +39,7 @@ export default defineConfig(() => ({
   //   plugins: () => [ nxViteTsPaths() ],
   // },
   build: {
-    outDir: '../dist/web-client',
+    outDir: '../../dist/apps/web-client',
     emptyOutDir: true,
     reportCompressedSize: true,
     commonjsOptions: {

@@ -57,3 +57,8 @@ export interface MonitorState {
 }
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+
+export const APP_CONFIG = {
+  API_PORT: 3001,
+  WEB_PORT: 3000,
+};

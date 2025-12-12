@@ -3,7 +3,7 @@ import { createServer } from "http";
 import path from "path";
 import { WebSocketServer, WebSocket } from "ws";
 import { WingMonitorController } from "@wing-monitor/wing-controller";
-import { MonitorState } from "@wing-monitor/shared-models";
+import { MonitorState, APP_CONFIG } from "@wing-monitor/shared-models";
 import { config as wingConfig, MOCK_MODE } from "./config";
 import { loadSettings, saveSettings, Settings } from "./settings";
 
@@ -183,7 +183,7 @@ async function startServer() {
   });
 
   // Use port 3001 for backend to avoid conflict with Vite (3000)
-  const port = process.env.PORT || 3001;
+  const port = APP_CONFIG.API_PORT;
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
