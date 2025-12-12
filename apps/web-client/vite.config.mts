@@ -32,6 +32,7 @@ export default defineConfig(() => ({
   preview: {
     port: APP_CONFIG.WEB_PORT,
     host: '0.0.0.0',
+    allowedHosts: true,
   },
   plugins: [react(), tailwindcss(), nxViteTsPaths(), nxCopyAssetsPlugin(['*.md'])],
   // Uncomment this if you are using workers.
