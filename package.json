@@ -2,7 +2,12 @@
   "name": "@nx-workspace/source",
   "version": "0.0.0",
   "license": "MIT",
-  "scripts": {},
+  "scripts": {
+    "kill:ports": "fuser -k 3000/tcp 3001/tcp 3002/tcp 3333/tcp || true",
+    "start:web": "npm run kill:ports && nx serve web-client --port 3001 --host --allowed-hosts all",
+    "start:api": "npm run kill:ports && nx serve api",
+    "start:all": "npm run kill:ports && nx run-many --target=serve --projects=api,web-client --parallel"
+  },
   "private": true,
   "devDependencies": {
     "@eslint/js": "^9.8.0",

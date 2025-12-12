@@ -18,6 +18,7 @@ export default defineConfig(() => ({
   server: {
     port: APP_CONFIG.WEB_PORT,
     host: '0.0.0.0',
+    allowedHosts: true,
     proxy: {
       '/api': {
         target: `http://localhost:${APP_CONFIG.API_PORT}`,
