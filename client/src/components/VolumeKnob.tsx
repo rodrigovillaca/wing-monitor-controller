@@ -85,7 +85,10 @@ export function VolumeKnob({ value, onChange, size, className }: VolumeKnobProps
         style={{ 
           width: '70%', 
           height: '70%',
-          transform: `rotate(${rotation}deg)`
+          transform: `rotate(${rotation}deg)`,
+          boxShadow: `5px 5px 10px var(--neu-shadow-dark), 
+                     -5px -5px 10px var(--neu-shadow-light), 
+                     0 0 ${value * 0.6}px rgba(255, 255, 255, ${value * 0.003})`
         }}
         onMouseDown={handleMouseDown}
       >
