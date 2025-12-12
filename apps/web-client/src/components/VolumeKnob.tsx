@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { cn } from '@/lib/utils';
 
 interface VolumeKnobProps {
@@ -25,6 +25,20 @@ export function VolumeKnob({
 
   // Convert 0-100 value to rotation degrees (-135 to 135)
   const rotation = (value / 100) * 270 - 135;
+
+  const displayValue = useMemo(() => {
+    if (displayUnit === 'percent') {
+      return `${Math.round(value)}%`;
+    }
+    if (value === 0) return '-∞ dB';
+    let db;
+    if (value >= 75) {
+      db = ((value - 75) / 25) * 10;
+    } else {
+      db = (value / 75) * 90 - 90;
+    }
+    return `${db > 0 ? '+' : ''}${db.toFixed(1)} dB`;
+  }, [value, displayUnit]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -72,6 +86,12 @@ export function VolumeKnob({
       <div className="absolute inset-0 rounded-full pointer-events-none">
         {Array.from({ length: 13 }).map((_, i) => {
           const deg = (i / 12) * 270 - 135;
+          // Calculate if this tick is "active" (covered by the knob's current position)
+          // The knob rotation goes from -135 to +135.
+          // If current rotation >= tick rotation, it's active.
+          // Add a small buffer for exact matches if needed, but >= should work.
+          const isActive = rotation >= deg;
+          
           return (
             <div
               key={i}
@@ -80,8 +100,15 @@ export function VolumeKnob({
                 transform: `translate(-50%, -100%) rotate(${deg}deg)`
               }}
             >
-              {/* The tick line itself, positioned at the top (outer edge) of the radius */}
-              <div className="w-full h-[12%] bg-gray-400 mt-[18%]" />
+              {/* The tick line itself */}
+              <div 
+                className={cn(
+                  "w-full h-[12%] mt-[18%] transition-all duration-200",
+                  isActive 
+                    ? "bg-cyan-500 shadow-[0_0_5px_rgba(6,182,212,0.8)]" 
+                    : "bg-gray-600"
+                )} 
+              />
             </div>
           );
         })}
@@ -131,7 +158,11 @@ export function VolumeKnob({
           transform: `rotate(${rotation}deg)`,
           boxShadow: `5px 5px 10px var(--neu-shadow-dark), 
                      -5px -5px 10px var(--neu-shadow-light), 
-                     inset 0 0 ${value * 0.5}px rgba(6, 182, 212, ${value * 0.008})`
+                     inset 0 0 ${value * 0.5}px rgba(6, 182, 212, ${value * 0.008})`,
+          background: `
+            radial-gradient(circle at 30% 30%, rgba(255,255,255,0.1) 0%, transparent 20%),
+            conic-gradient(from 0deg, #e5e7eb 0%, #d1d5db 25%, #e5e7eb 50%, #d1d5db 75%, #e5e7eb 100%)
+          `
         }}
         onMouseDown={handleMouseDown}
       >
@@ -145,24 +176,10 @@ export function VolumeKnob({
       </div>
       
       {/* Value Display */}
-      <div className="absolute bottom-[-15%] font-rajdhani font-bold text-2xl text-foreground">
-        {displayUnit === 'percent' ? (
-          `${Math.round(value)}%`
-        ) : (
-          (() => {
-            if (value === 0) return '-∞ dB';
-            // Piecewise mapping:
-            // 75-100% -> 0 to +10 dB
-            // 0-75%   -> -90 to 0 dB
-            let db;
-            if (value >= 75) {
-              db = ((value - 75) / 25) * 10;
-            } else {
-              db = (value / 75) * 90 - 90;
-            }
-            return `${db > 0 ? '+' : ''}${db.toFixed(1)} dB`;
-          })()
-        )}
+      <div className="absolute bottom-[-20%] bg-black/80 px-3 py-1 rounded border border-gray-700 shadow-[inset_0_0_4px_rgba(0,0,0,0.8)]">
+        <div className="font-mono font-bold text-lg text-cyan-400 tracking-widest drop-shadow-[0_0_2px_rgba(34,211,238,0.8)]">
+          {displayValue}
+        </div>
       </div>
     </div>
   );
