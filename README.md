@@ -1,130 +1,96 @@
-# Wing Studio Monitor Controller
+# NxWorkspace
 
-A custom web application and Node.js library to turn your **Behringer Wing Rack** console into a high-end **Studio Monitor Controller**.
+<a alt="Nx logo" href="https://nx.dev" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/nrwl/nx/master/images/nx-logo.png" width="45"></a>
 
-![Wing Monitor Controller UI](https://raw.githubusercontent.com/manus-ai/wing-monitor-controller/main/docs/screenshot.png)
+✨ Your new, shiny [Nx workspace](https://nx.dev) is ready ✨.
 
-## Overview
+[Learn more about this workspace setup and its capabilities](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects) or run `npx nx graph` to visually explore what was created. Now, let's get you up to speed!
 
-This project consists of two main components:
+## Run tasks
 
-1.  **`wing-studio-monitor-controller`**: A reusable Node.js library that handles OSC communication with the Wing console, managing state, routing, and logic (e.g., subwoofer crossover, mono, dim).
-2.  **Web Application**: A React-based frontend with a **Neumorphic (Soft UI)** design that mimics the look and feel of physical hardware.
+To run tasks with Nx use:
 
-## Features
-
--   **Hardware-like UI**: Realistic volume knob, tactile buttons, and LED indicators.
--   **Input Source Selection**: Switch between multiple sources (DAW, Reference, Client, etc.).
--   **Auxiliary Inputs**: Toggle additional inputs (Bluetooth, Mini Jack) simultaneously with the main source.
--   **Speaker Switching**: Toggle between Main Monitors, Nearfields, and Mini Cubes.
--   **Subwoofer Control**: Enable/disable subwoofer. **Note:** Crossover EQ must be configured manually on the console; this app simply toggles the EQ on/off on the main speakers when the sub is active.
--   **Monitor Functions**:
-    -   **Dim**: Attenuate volume by 20dB.
-    -   **Mute**: Cut all audio.
-    -   **Mono**: Sum stereo signal to mono for phase checking.
-    -   **Polarity Flip**: Invert phase on one channel for null testing.
-    -   **Talkback**: Toggle talkback microphone (state tracking).
--   **Real-time Sync**: Bidirectional communication ensures the UI always reflects the console state.
-
-## Project Structure
-
-```
-wing-monitor-controller-web/
-├── client/                         # React Frontend
-│   ├── src/
-│   │   ├── components/             # Reusable UI components (Knob, Buttons)
-│   │   ├── pages/                  # Main Controller View
-│   │   └── ...
-├── server/                         # Node.js Backend
-│   ├── index.ts                    # Express + WebSocket Server
-│   └── ...
-├── wing-studio-monitor-controller/ # Core Logic Library
-│   ├── src/
-│   │   ├── index.ts                # Main Controller Class
-│   │   └── types.ts                # TypeScript Interfaces
-│   └── package.json
-├── config.ts                       # Main Configuration File
-└── package.json                    # Root configuration
+```sh
+npx nx <target> <project-name>
 ```
 
-## Getting Started
+For example:
 
-### Prerequisites
-
--   Node.js (v18 or higher)
--   Behringer Wing Console (connected to network)
-
-### Installation
-
-1.  Clone the repository:
-    ```bash
-    git clone https://github.com/yourusername/wing-monitor-controller.git
-    cd wing-monitor-controller
-    ```
-
-2.  Install dependencies:
-    ```bash
-    npm install
-    # Or using pnpm
-    pnpm install
-    ```
-
-3.  **Configuration**:
-    Open `config.ts` in the root directory and update the settings:
-    ```typescript
-    export const config: WingMonitorConfig = {
-      network: {
-        ipAddress: '192.168.1.70', // Your WING's IP
-        wingPort: 10024,
-        localPort: 9000,
-        retryAttempts: 3,       // Optional: Retries for failed commands
-        retryDelay: 100,        // Optional: Delay in ms between retries
-      },
-      monitorInputs: [
-        { name: 'DAW 1-2', path: '/ch/1' },
-        { name: 'REF TRACK', path: '/ch/2' },
-      ],
-      // Optional: Auxiliary Inputs (can be active simultaneously with main input)
-      auxInputs: [
-        { name: 'BLUETOOTH', path: '/aux/1' },
-        { name: 'MINI JACK', path: '/aux/2' },
-      ],
-      monitorMatrixOutputs: [
-        { name: 'MAIN MON', path: '/mtx/1' },
-        { name: 'NEARFIELD', path: '/mtx/2' },
-      ],
-      // ...
-    };
-    ```
-
-### Running Development Mode
-
-Start both the frontend and backend in development mode:
-
-```bash
-npm run dev
+```sh
+npx nx build myproject
 ```
 
-Open [http://localhost:3000](http://localhost:3000) in your browser.
+These targets are either [inferred automatically](https://nx.dev/concepts/inferred-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) or defined in the `project.json` or `package.json` files.
 
-### Mock Mode (No Hardware Required)
+[More about running tasks in the docs &raquo;](https://nx.dev/features/run-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
 
-To test the UI without a physical console, set `MOCK_MODE = true` in `config.ts`.
+## Add new projects
 
-## Library Usage
+While you could add new projects to your workspace manually, you might want to leverage [Nx plugins](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) and their [code generation](https://nx.dev/features/generate-code?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) feature.
 
-The core logic is available as a standalone library in `wing-studio-monitor-controller`. You can use it in other projects (e.g., a mobile app).
-
-```typescript
-import { WingMonitorController } from './wing-studio-monitor-controller';
-import { config } from '../config';
-
-const controller = new WingMonitorController(config);
-
-controller.connect();
-controller.setVolume(80); // Set volume to 80%
+To install a new plugin you can use the `nx add` command. Here's an example of adding the React plugin:
+```sh
+npx nx add @nx/react
 ```
 
-## License
+Use the plugin's generator to create new projects. For example, to create a new React app or library:
 
-MIT
+```sh
+# Generate an app
+npx nx g @nx/react:app demo
+
+# Generate a library
+npx nx g @nx/react:lib some-lib
+```
+
+You can use `npx nx list` to get a list of installed plugins. Then, run `npx nx list <plugin-name>` to learn about more specific capabilities of a particular plugin. Alternatively, [install Nx Console](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) to browse plugins and generators in your IDE.
+
+[Learn more about Nx plugins &raquo;](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) | [Browse the plugin registry &raquo;](https://nx.dev/plugin-registry?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+## Set up CI!
+
+### Step 1
+
+To connect to Nx Cloud, run the following command:
+
+```sh
+npx nx connect
+```
+
+Connecting to Nx Cloud ensures a [fast and scalable CI](https://nx.dev/ci/intro/why-nx-cloud?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects) pipeline. It includes features such as:
+
+- [Remote caching](https://nx.dev/ci/features/remote-cache?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Task distribution across multiple machines](https://nx.dev/ci/features/distribute-task-execution?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Automated e2e test splitting](https://nx.dev/ci/features/split-e2e-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Task flakiness detection and rerunning](https://nx.dev/ci/features/flaky-tasks?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+### Step 2
+
+Use the following command to configure a CI workflow for your workspace:
+
+```sh
+npx nx g ci-workflow
+```
+
+[Learn more about Nx on CI](https://nx.dev/ci/intro/ci-with-nx#ready-get-started-with-your-provider?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+## Install Nx Console
+
+Nx Console is an editor extension that enriches your developer experience. It lets you run tasks, generate code, and improves code autocompletion in your IDE. It is available for VSCode and IntelliJ.
+
+[Install Nx Console &raquo;](https://nx.dev/getting-started/editor-setup?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+## Useful links
+
+Learn more:
+
+- [Learn more about this workspace setup](https://nx.dev/getting-started/intro#learn-nx?utm_source=nx_project&amp;utm_medium=readme&amp;utm_campaign=nx_projects)
+- [Learn about Nx on CI](https://nx.dev/ci/intro/ci-with-nx?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [Releasing Packages with Nx release](https://nx.dev/features/manage-releases?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+- [What are Nx plugins?](https://nx.dev/concepts/nx-plugins?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)
+
+And join the Nx community:
+- [Discord](https://go.nx.dev/community)
+- [Follow us on X](https://twitter.com/nxdevtools) or [LinkedIn](https://www.linkedin.com/company/nrwl)
+- [Our Youtube channel](https://www.youtube.com/@nxdevtools)
+- [Our blog](https://nx.dev/blog?utm_source=nx_project&utm_medium=readme&utm_campaign=nx_projects)

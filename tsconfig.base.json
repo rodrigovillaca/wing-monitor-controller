@@ -1,0 +1,25 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "moduleResolution": "node",
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "target": "es2015",
+    "module": "esnext",
+    "lib": ["es2020", "dom"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "paths": {
+      "@wing-monitor/wing-controller": ["wing-controller/src/index.ts"],
+      "@wing-monitor/shared-models": ["shared-models/src/index.ts"],
+      "@/*": ["web-client/src/*"]
+    },
+    "composite": true
+  },
+  "exclude": ["node_modules", "tmp"]
+}
