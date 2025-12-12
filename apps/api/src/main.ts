@@ -181,7 +181,7 @@ async function startServer() {
   });
 
   // Use port 3001 for backend to avoid conflict with Vite (3000)
-  const port = APP_CONFIG.API_PORT;
+  const port = APP_CONFIG?.API_PORT || 3001;
 
   server.listen(port, () => {
     console.log(`Server running on http://localhost:${port}/`);
