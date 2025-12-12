@@ -6,9 +6,18 @@ interface VolumeKnobProps {
   onChange: (value: number) => void;
   size?: number;
   className?: string;
+  displayUnit?: 'percent' | 'db';
+  unityLevel?: number;
 }
 
-export function VolumeKnob({ value, onChange, size, className }: VolumeKnobProps) {
+export function VolumeKnob({ 
+  value, 
+  onChange, 
+  size, 
+  className,
+  displayUnit = 'percent',
+  unityLevel = 100 
+}: VolumeKnobProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [startValue, setStartValue] = useState(0);
@@ -88,7 +97,7 @@ export function VolumeKnob({ value, onChange, size, className }: VolumeKnobProps
           transform: `rotate(${rotation}deg)`,
           boxShadow: `5px 5px 10px var(--neu-shadow-dark), 
                      -5px -5px 10px var(--neu-shadow-light), 
-                     0 0 ${value * 0.6}px rgba(255, 255, 255, ${value * 0.003})`
+                     0 0 ${value * 0.8}px rgba(255, 255, 255, ${value * 0.006})`
         }}
         onMouseDown={handleMouseDown}
       >
@@ -101,7 +110,11 @@ export function VolumeKnob({ value, onChange, size, className }: VolumeKnobProps
       
       {/* Value Display */}
       <div className="absolute bottom-[-15%] font-rajdhani font-bold text-2xl text-foreground">
-        {Math.round(value)}%
+        {displayUnit === 'percent' ? (
+          `${Math.round((value / unityLevel) * 100)}%`
+        ) : (
+          `${value === 0 ? '-∞' : (20 * Math.log10(value / unityLevel)).toFixed(1)} dB`
+        )}
       </div>
     </div>
   );

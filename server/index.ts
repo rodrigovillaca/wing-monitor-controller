@@ -5,11 +5,14 @@ import { fileURLToPath } from "url";
 import { WebSocketServer, WebSocket } from "ws";
 import { WingMonitorController, MonitorState } from "../wing-studio-monitor-controller/src/index.ts";
 import { config as wingConfig, MOCK_MODE } from "../config";
+import { loadSettings, saveSettings, Settings } from "./settings";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 async function startServer() {
+  // Load settings
+  let settings: Settings = await loadSettings();
   const app = express();
   const server = createServer(app);
   const wss = new WebSocketServer({ server });
@@ -54,6 +57,12 @@ async function startServer() {
         auxInputs: wingConfig.auxInputs ? wingConfig.auxInputs.map((i, idx) => ({ name: i.name || `Aux ${idx+1}`, id: idx })) : [],
         outputs: wingConfig.monitorMatrixOutputs.map((o, idx) => ({ name: o.name || `Output ${idx+1}`, id: idx }))
       }
+    }));
+
+    // Send settings
+    ws.send(JSON.stringify({
+      type: 'SETTINGS_UPDATE',
+      payload: settings
     }));
 
     ws.on('message', (message) => {
@@ -111,6 +120,21 @@ async function startServer() {
       case 'SET_TALKBACK':
         // Talkback logic not fully implemented in library yet, but we can track state
         // wingController.setTalkback(data.payload);
+        break;
+      case 'SAVE_SETTINGS':
+        settings = data.payload;
+        saveSettings(settings)
+          .catch(err => console.error('Failed to save settings:', err));
+        
+        // Broadcast new settings to all clients
+        wss.clients.forEach((client) => {
+          if (client.readyState === WebSocket.OPEN) {
+            client.send(JSON.stringify({
+              type: 'SETTINGS_UPDATE',
+              payload: settings
+            }));
+          }
+        });
         break;
     }
   }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { VolumeKnob } from '@/components/VolumeKnob';
 import { NeuButton } from '@/components/NeuButton';
 import { StereoMeter } from '@/components/StereoMeter';
+import { SettingsModal } from '@/components/SettingsModal';
 import { 
   Mic2, 
   Speaker, 
@@ -12,7 +13,8 @@ import {
   ArrowLeftRight,
   Music2,
   Wifi,
-  WifiOff
+  WifiOff,
+  Settings as SettingsIcon
 } from 'lucide-react';
 
 interface MonitorState {
@@ -33,7 +35,18 @@ interface ConfigItem {
   id: number;
 }
 
+interface AppSettings {
+  volumeUnit: 'percent' | 'db';
+  unityLevel: number;
+}
+
 export default function MonitorController() {
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [settings, setSettings] = useState<AppSettings>({
+    volumeUnit: 'percent',
+    unityLevel: 100
+  });
+
   const [state, setState] = useState<MonitorState>({
     mainLevel: 0,
     isMuted: false,
@@ -88,6 +101,8 @@ export default function MonitorController() {
             setInputs(data.payload.inputs);
             setAuxInputs(data.payload.auxInputs || []);
             setOutputs(data.payload.outputs);
+          } else if (data.type === 'SETTINGS_UPDATE') {
+            setSettings(data.payload);
           }
         } catch (e) {
           console.error('Error parsing message', e);
@@ -139,9 +154,28 @@ export default function MonitorController() {
     sendCommand('TOGGLE_AUX', index);
   };
 
+  const handleSaveSettings = (newSettings: AppSettings) => {
+    setSettings(newSettings);
+    sendCommand('SAVE_SETTINGS', newSettings);
+    setIsSettingsOpen(false);
+  };
+
   return (
     <div className="min-h-screen bg-neu-base flex items-center justify-center p-8">
+      <SettingsModal 
+        isOpen={isSettingsOpen} 
+        onClose={() => setIsSettingsOpen(false)} 
+        onSave={handleSaveSettings}
+        initialSettings={settings}
+      />
       <div className="neu-flat p-12 max-w-6xl w-full grid grid-cols-12 gap-8 relative overflow-hidden">
+        {/* Settings Button */}
+        <button 
+          onClick={() => setIsSettingsOpen(true)}
+          className="absolute top-6 right-6 text-muted-foreground hover:text-foreground transition-colors"
+        >
+          <SettingsIcon size={24} />
+        </button>
         
 
 
@@ -234,13 +268,17 @@ export default function MonitorController() {
           </div>
 
           {/* Big Knob & Meters */}
-          <div className="py-4 flex flex-col items-center gap-8">
+          <div className="py-4 flex flex-col items-center gap-8 w-full">
             <StereoMeter left={state.mainLevel / 100} right={state.mainLevel / 100} />
-            <VolumeKnob 
-              value={state.mainLevel} 
-              onChange={(val) => updateState({ mainLevel: val })}
-              size={280}
-            />
+            <div className="w-full max-w-[280px] aspect-square">
+              <VolumeKnob 
+                value={state.mainLevel} 
+                onChange={(val) => updateState({ mainLevel: val })}
+                className="w-full h-full"
+                displayUnit={settings.volumeUnit}
+                unityLevel={settings.unityLevel}
+              />
+            </div>
           </div>
 
           {/* Bottom Controls */}
