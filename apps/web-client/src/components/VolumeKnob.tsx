@@ -81,7 +81,7 @@ export function VolumeKnob({
               }}
             >
               {/* The tick line itself, positioned at the top (outer edge) of the radius */}
-              <div className="w-full h-[12%] bg-gray-400 mt-[15%]" />
+              <div className="w-full h-[12%] bg-gray-400 mt-[18%]" />
             </div>
           );
         })}
@@ -96,7 +96,7 @@ export function VolumeKnob({
             transform: 'translate(-50%, -100%) rotate(-135deg)'
           }}
         >
-          <span style={{ transform: 'rotate(135deg)', marginTop: '-2px' }}>-∞</span>
+          <span style={{ transform: 'rotate(135deg)', marginTop: '2px' }}>-∞</span>
         </div>
 
         {/* 0 dB at 75% (67.5deg) */}
@@ -106,7 +106,7 @@ export function VolumeKnob({
             transform: 'translate(-50%, -100%) rotate(67.5deg)'
           }}
         >
-          <span style={{ transform: 'rotate(-67.5deg)', marginTop: '-2px' }}>0</span>
+          <span style={{ transform: 'rotate(-67.5deg)', marginTop: '2px' }}>0</span>
         </div>
 
         {/* +10 dB at 100% (135deg) */}
@@ -116,7 +116,7 @@ export function VolumeKnob({
             transform: 'translate(-50%, -100%) rotate(135deg)'
           }}
         >
-          <span style={{ transform: 'rotate(-135deg)', marginTop: '-2px' }}>+10</span>
+          <span style={{ transform: 'rotate(-135deg)', marginTop: '2px' }}>+10</span>
         </div>
       </div>
 
