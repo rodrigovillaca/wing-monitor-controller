@@ -1,1 +1,10 @@
 autoInstallPeers: true
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@serialport/bindings-cpp'
+  - '@swc/core'
+  - core-js-pure
+  - esbuild
+  - nx
+  - unrs-resolver

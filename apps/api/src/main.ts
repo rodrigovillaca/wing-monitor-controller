@@ -1,15 +1,16 @@
 import express from "express";
 import { createServer } from "http";
 import path from "path";
-import { fileURLToPath } from "url";
 import { WebSocketServer, WebSocket } from "ws";
 import { WingMonitorController } from "@wing-monitor/wing-controller";
 import { MonitorState } from "@wing-monitor/shared-models";
 import { config as wingConfig, MOCK_MODE } from "./config";
 import { loadSettings, saveSettings, Settings } from "./settings";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+// Prefer CommonJS globals when available; fall back to cwd for dev runners.
+// (Do not use import.meta here because the API build outputs CJS.)
+const runtimeDirname: string =
+  typeof __dirname !== "undefined" ? __dirname : process.cwd();
 
 async function startServer() {
   // Load settings
@@ -29,12 +30,13 @@ async function startServer() {
     broadcastState(wingController.getState());
   });
 
-  wingController.on('error', (err: any) => {
-    console.error('Wing Controller Error:', err);
+  wingController.on("error", (err: unknown) => {
+    console.error("Wing Controller Error:", err);
   });
 
-  wingController.on('stateChanged', (state: any) => {
-    broadcastState(state);
+  wingController.on("stateChanged", () => {
+    // Prefer the controller's strongly-typed state when broadcasting.
+    broadcastState(wingController.getState());
   });
 
   // Start OSC connection (Already connected in constructor)
@@ -89,53 +91,80 @@ async function startServer() {
     });
   }
 
-  function handleClientMessage(data: any) {
-    switch (data.type) {
-      case 'SET_VOLUME':
-        wingController.setVolume(data.payload);
+  function handleClientMessage(data: unknown): void {
+    if (typeof data !== "object" || data === null) return;
+
+    const record = data as Record<string, unknown>;
+    const type = record["type"];
+    const payload = record["payload"];
+
+    if (typeof type !== "string") return;
+
+    switch (type) {
+      case "SET_VOLUME":
+        if (typeof payload === "number") {
+          wingController.setVolume(payload);
+        }
         break;
-      case 'SET_MUTE':
-        wingController.setMute(data.payload);
+      case "SET_MUTE":
+        if (typeof payload === "boolean") {
+          wingController.setMute(payload);
+        }
         break;
-      case 'SET_DIM':
-        wingController.setDim(data.payload);
+      case "SET_DIM":
+        if (typeof payload === "boolean") {
+          wingController.setDim(payload);
+        }
         break;
-      case 'SET_MONO':
-        wingController.setMono(data.payload);
+      case "SET_MONO":
+        if (typeof payload === "boolean") {
+          wingController.setMono(payload);
+        }
         break;
-      case 'SET_INPUT':
-        wingController.setInput(data.payload);
+      case "SET_INPUT":
+        if (typeof payload === "number") {
+          wingController.setInput(payload);
+        }
         break;
-      case 'SET_OUTPUT':
-        wingController.setOutput(data.payload);
+      case "SET_OUTPUT":
+        if (typeof payload === "number") {
+          wingController.setOutput(payload);
+        }
         break;
-      case 'SET_SUBWOOFER':
-        wingController.setSubwoofer(data.payload);
+      case "SET_SUBWOOFER":
+        if (typeof payload === "boolean") {
+          wingController.setSubwoofer(payload);
+        }
         break;
-      case 'TOGGLE_AUX':
-        wingController.toggleAuxInput(data.payload);
+      case "TOGGLE_AUX":
+        if (typeof payload === "number") {
+          wingController.toggleAuxInput(payload);
+        }
         break;
-      case 'SET_POLARITY':
-        // wingController.setPolarity(data.payload);
-        break;
-      case 'SET_TALKBACK':
-        // Talkback logic not fully implemented in library yet, but we can track state
-        // wingController.setTalkback(data.payload);
-        break;
-      case 'SAVE_SETTINGS':
-        settings = data.payload;
-        saveSettings(settings)
-          .catch(err => console.error('Failed to save settings:', err));
-        
-        // Broadcast new settings to all clients
-        wss.clients.forEach((client) => {
-          if (client.readyState === WebSocket.OPEN) {
-            client.send(JSON.stringify({
-              type: 'SETTINGS_UPDATE',
-              payload: settings
-            }));
-          }
-        });
+      case "SAVE_SETTINGS":
+        if (
+          typeof payload === "object" &&
+          payload !== null &&
+          "volumeUnit" in payload &&
+          "unityLevel" in payload
+        ) {
+          settings = payload as Settings;
+          saveSettings(settings).catch((err: unknown) =>
+            console.error("Failed to save settings:", err)
+          );
+
+          // Broadcast new settings to all clients
+          wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(
+                JSON.stringify({
+                  type: "SETTINGS_UPDATE",
+                  payload: settings,
+                })
+              );
+            }
+          });
+        }
         break;
     }
   }
@@ -143,8 +172,8 @@ async function startServer() {
   // Serve static files from dist/public in production
   const staticPath =
     process.env.NODE_ENV === "production"
-      ? path.resolve(__dirname, "public")
-      : path.resolve(__dirname, "..", "dist", "public");
+      ? path.resolve(runtimeDirname, "public")
+      : path.resolve(runtimeDirname, "..", "dist", "public");
 
   app.use(express.static(staticPath));
 

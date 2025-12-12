@@ -1,7 +1,8 @@
 {
   "name": "wing-controller",
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "sourceRoot": "wing-controller/src",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "libs/wing-controller",
+  "sourceRoot": "libs/wing-controller/src",
   "projectType": "library",
   "tags": [],
   "targets": {
@@ -16,10 +17,10 @@
       "executor": "@nx/js:tsc",
       "outputs": ["{options.outputPath}"],
       "options": {
-        "outputPath": "dist/wing-controller",
-        "main": "wing-controller/src/index.ts",
-        "tsConfig": "wing-controller/tsconfig.lib.json",
-        "assets": ["wing-controller/*.md"]
+        "outputPath": "dist/libs/wing-controller",
+        "main": "libs/wing-controller/src/index.ts",
+        "tsConfig": "libs/wing-controller/tsconfig.lib.json",
+        "assets": ["libs/wing-controller/*.md"]
       }
     }
   }

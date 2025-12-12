@@ -15,9 +15,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
-      "@wing-monitor/wing-controller": ["wing-controller/src/index.ts"],
-      "@wing-monitor/shared-models": ["shared-models/src/index.ts"],
-      "@/*": ["web-client/src/*"]
+      "@wing-monitor/wing-controller": ["libs/wing-controller/src/index.ts"],
+      "@wing-monitor/shared-models": ["libs/shared-models/src/index.ts"],
+      "@/*": ["apps/web-client/src/*"]
     },
     "composite": true
   },

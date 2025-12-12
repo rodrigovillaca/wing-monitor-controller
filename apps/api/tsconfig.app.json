@@ -5,11 +5,19 @@
     "module": "commonjs",
     "types": ["node", "express"]
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "../../libs/shared-models/src/**/*.ts",
+    "../../libs/wing-controller/src/**/*.ts"
+  ],
   "exclude": [
     "jest.config.ts",
     "jest.config.cts",
     "src/**/*.spec.ts",
-    "src/**/*.test.ts"
+    "src/**/*.test.ts",
+    "../../libs/shared-models/src/**/*.spec.ts",
+    "../../libs/shared-models/src/**/*.test.ts",
+    "../../libs/wing-controller/src/**/*.spec.ts",
+    "../../libs/wing-controller/src/**/*.test.ts"
   ]
 }

@@ -1,13 +1,19 @@
 {
+  "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "allowJs": false,
     "esModuleInterop": false,
     "allowSyntheticDefaultImports": true,
     "strict": true,
+    "noImplicitAny": false,
+    "composite": false,
+    "declaration": false,
     "types": ["vite/client", "vitest"],
     "paths": {
-      "@/*": ["web-client/src/*"]
+      "@/*": ["apps/web-client/src/*"],
+      "@wing-monitor/shared-models": ["libs/shared-models/src/index.ts"],
+      "@wing-monitor/wing-controller": ["libs/wing-controller/src/index.ts"]
     }
   },
   "files": [],
@@ -19,6 +25,5 @@
     {
       "path": "./tsconfig.spec.json"
     }
-  ],
-  "extends": "../tsconfig.base.json"
+  ]
 }

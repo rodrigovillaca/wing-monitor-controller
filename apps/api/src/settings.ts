@@ -1,26 +1,28 @@
 import fs from "fs/promises";
 import path from "path";
-import { fileURLToPath } from "url";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const SETTINGS_FILE = path.join(__dirname, "settings.json");
+// Prefer CommonJS globals when available; fall back to cwd for dev runners.
+// (Do not use import.meta here because the API build outputs CJS.)
+const settingsDir: string =
+  typeof __dirname !== "undefined" ? __dirname : process.cwd();
+
+const SETTINGS_FILE: string = path.join(settingsDir, "settings.json");
 
 export interface Settings {
-  volumeUnit: 'percent' | 'db';
+  volumeUnit: "percent" | "db";
   unityLevel: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  volumeUnit: 'percent',
-  unityLevel: 100
+  volumeUnit: "percent",
+  unityLevel: 100,
 };
 
 export async function loadSettings(): Promise<Settings> {
   try {
-    const data = await fs.readFile(SETTINGS_FILE, 'utf-8');
-    return JSON.parse(data);
-  } catch (e) {
+    const data: string = await fs.readFile(SETTINGS_FILE, "utf-8");
+    return JSON.parse(data) as Settings;
+  } catch {
     return DEFAULT_SETTINGS;
   }
 }

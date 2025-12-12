@@ -62,6 +62,10 @@
       }
     }
   ],
+  "ignorePatterns": [
+    "**/_temp_backup/**",
+    "**/tmp/**"
+  ],
   "generators": {
     "@nx/react": {
       "application": {
