@@ -136,7 +136,9 @@ export function VolumeKnob({
         onMouseDown={handleMouseDown}
       >
         {/* Indicator Line */}
-        <div className="absolute top-[10%] w-[2%] h-[15%] bg-accent rounded-full shadow-[0_0_10px_var(--color-accent)]" />
+        <div className="absolute top-[5%] w-[4px] h-[25%] bg-cyan-500 rounded-full shadow-[0_0_8px_rgba(6,182,212,0.8)] z-20">
+          <div className="w-full h-full bg-white/50 rounded-full blur-[1px]" />
+        </div>
         
         {/* Center Cap */}
         <div className="w-1/3 h-1/3 rounded-full bg-neu-base shadow-inner" />
