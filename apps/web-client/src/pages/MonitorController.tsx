@@ -57,6 +57,27 @@ export default function MonitorController() {
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
+    // Check for Mock Mode
+    if (import.meta.env.VITE_MOCK_MODE === 'true') {
+      console.log('Running in MOCK MODE');
+      setIsConnected(true);
+      setInputs([
+        { id: 0, name: 'DAW 1-2' },
+        { id: 1, name: 'Mac System' },
+        { id: 2, name: 'Reference' }
+      ]);
+      setOutputs([
+        { id: 0, name: 'Main Monitors' },
+        { id: 1, name: 'Nearfields' },
+        { id: 2, name: 'Mini Cube' }
+      ]);
+      setAuxInputs([
+        { id: 10, name: 'Bluetooth' },
+        { id: 11, name: 'Talkback Mic' }
+      ]);
+      return;
+    }
+
     // Connect to WebSocket
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // In development (port 3000), connect to backend on port 3001
@@ -110,6 +131,10 @@ export default function MonitorController() {
   }, []);
 
   const sendCommand = (type: string, payload: any) => {
+    if (import.meta.env.VITE_MOCK_MODE === 'true') {
+      console.log('Mock Command:', type, payload);
+      return;
+    }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify({ type, payload }));
     }

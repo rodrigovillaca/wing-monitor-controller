@@ -6,7 +6,8 @@
     "kill:ports": "fuser -k 3000/tcp 3001/tcp 3002/tcp 3333/tcp || true",
     "start:web": "npm run kill:ports && nx serve web-client --port 3001 --host --allowed-hosts all",
     "start:api": "npm run kill:ports && nx serve api",
-    "start:all": "npm run kill:ports && nx run-many --target=serve --projects=api,web-client --parallel"
+    "start:all": "npm run kill:ports && nx run-many --target=serve --projects=api,web-client --parallel",
+    "start:mock": "VITE_MOCK_MODE=true npm run start:web"
   },
   "private": true,
   "devDependencies": {
