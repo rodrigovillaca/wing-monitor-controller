@@ -202,15 +202,15 @@
   
   .on-cyan {
     background-color: #00ffff;
-    box-shadow: 0 0 10px #00ffff, 0 0 20px #00ffff;
+    box-shadow: 0 0 5px #00ffff, 0 0 10px #00ffff;
   }
   
   .on-amber {
     background-color: #ffbf00;
-    box-shadow: 0 0 10px #ffbf00, 0 0 20px #ffbf00;
+    box-shadow: 0 0 5px #ffbf00, 0 0 10px #ffbf00;
   }
   
   .on-red {
     background-color: #ff0000;
-    box-shadow: 0 0 10px #ff0000, 0 0 20px #ff0000;
+    box-shadow: 0 0 5px #ff0000, 0 0 10px #ff0000;
   }
