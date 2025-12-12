@@ -1,0 +1,17 @@
+{
+  "name": "web-client",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "root": "apps/web-client",
+  "sourceRoot": "apps/web-client/src",
+  "projectType": "application",
+  "tags": [],
+  "targets": {
+    "test": {
+      "executor": "@nx/jest:jest",
+      "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
+      "options": {
+        "jestConfig": "apps/web-client/jest.config.ts"
+      }
+    }
+  }
+}
