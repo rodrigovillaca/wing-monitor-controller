@@ -70,8 +70,8 @@ export function VolumeKnob({
     >
       {/* Tick Marks */}
       <div className="absolute inset-0 rounded-full pointer-events-none">
-        {Array.from({ length: 11 }).map((_, i) => {
-          const deg = (i / 10) * 270 - 135;
+        {Array.from({ length: 13 }).map((_, i) => {
+          const deg = (i / 12) * 270 - 135;
           return (
             <div
               key={i}
@@ -96,7 +96,7 @@ export function VolumeKnob({
             transform: 'translate(-50%, -100%) rotate(-135deg)'
           }}
         >
-          <span style={{ transform: 'rotate(135deg)', marginTop: '-10px' }}>-∞</span>
+          <span style={{ transform: 'rotate(135deg)', marginTop: '-2px' }}>-∞</span>
         </div>
 
         {/* 0 dB at 75% (67.5deg) */}
@@ -106,7 +106,7 @@ export function VolumeKnob({
             transform: 'translate(-50%, -100%) rotate(67.5deg)'
           }}
         >
-          <span style={{ transform: 'rotate(-67.5deg)', marginTop: '-10px' }}>0</span>
+          <span style={{ transform: 'rotate(-67.5deg)', marginTop: '-2px' }}>0</span>
         </div>
 
         {/* +10 dB at 100% (135deg) */}
@@ -116,7 +116,7 @@ export function VolumeKnob({
             transform: 'translate(-50%, -100%) rotate(135deg)'
           }}
         >
-          <span style={{ transform: 'rotate(-135deg)', marginTop: '-10px' }}>+10</span>
+          <span style={{ transform: 'rotate(-135deg)', marginTop: '-2px' }}>+10</span>
         </div>
       </div>
 
