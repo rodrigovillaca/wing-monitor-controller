@@ -169,11 +169,9 @@ async function startServer() {
     }
   }
 
-  // Serve static files from dist/public in production
-  const staticPath =
-    process.env.NODE_ENV === "production"
-      ? path.resolve(runtimeDirname, "public")
-      : path.resolve(runtimeDirname, "..", "dist", "public");
+  // Serve static files from dist/apps/web-client
+  // We assume the app is run from the workspace root or the built output structure matches
+  const staticPath = path.join(process.cwd(), 'dist/apps/web-client');
 
   app.use(express.static(staticPath));
 

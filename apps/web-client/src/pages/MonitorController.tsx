@@ -33,8 +33,8 @@ interface AppSettings {
 export default function MonitorController() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings>({
-    volumeUnit: 'percent',
-    unityLevel: 100
+    volumeUnit: 'db',
+    unityLevel: 75
   });
 
   const [state, setState] = useState<MonitorState>({

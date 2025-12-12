@@ -111,9 +111,21 @@ export function VolumeKnob({
       {/* Value Display */}
       <div className="absolute bottom-[-15%] font-rajdhani font-bold text-2xl text-foreground">
         {displayUnit === 'percent' ? (
-          `${Math.round((value / unityLevel) * 100)}%`
+          `${Math.round(value)}%`
         ) : (
-          `${value === 0 ? '-∞' : (20 * Math.log10(value / unityLevel)).toFixed(1)} dB`
+          (() => {
+            if (value === 0) return '-∞ dB';
+            // Piecewise mapping:
+            // 75-100% -> 0 to +10 dB
+            // 0-75%   -> -90 to 0 dB
+            let db;
+            if (value >= 75) {
+              db = ((value - 75) / 25) * 10;
+            } else {
+              db = (value / 75) * 90 - 90;
+            }
+            return `${db > 0 ? '+' : ''}${db.toFixed(1)} dB`;
+          })()
         )}
       </div>
     </div>

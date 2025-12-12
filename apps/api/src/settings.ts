@@ -12,8 +12,8 @@ export interface Settings {
 }
 
 export const DEFAULT_SETTINGS: Settings = {
-  volumeUnit: "percent",
-  unityLevel: 0.75,
+  volumeUnit: "db",
+  unityLevel: 75,
 };
 
 export async function loadSettings(): Promise<Settings> {
