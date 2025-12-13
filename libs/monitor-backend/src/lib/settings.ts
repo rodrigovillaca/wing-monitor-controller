@@ -66,16 +66,10 @@ export async function loadSettings(): Promise<Settings> {
       // Try to find template in current dir or build output
       // In production build, assets might be copied to root or specific folder
       // For now, we'll try to read it, if fail, write DEFAULT_SETTINGS
-      let templateContent = JSON.stringify(DEFAULT_SETTINGS, null, 2);
+      // Use internal defaults if template file is missing or we are in dev mode
+      const templateContent = JSON.stringify(DEFAULT_SETTINGS, null, 2);
       
-      try {
-          // Try reading template if it exists in the build output
-          templateContent = await fs.readFile(TEMPLATE_FILE, "utf-8");
-      } catch (e) {
-          // Template file might not be in the same dir in dist, ignore and use defaults
-          console.warn("Template file not found, using internal defaults");
-      }
-
+      console.log(`Creating default settings file at ${SETTINGS_FILE}`);
       await fs.writeFile(SETTINGS_FILE, templateContent);
     } catch (err) {
       console.error("Failed to initialize settings file:", err);
