@@ -32,3 +32,269 @@ Using Config: IP=192.168.1.70, MockMode=true
 [1m[31m    at fulfilled (/home/ubuntu/wing-monitor-controller-web/node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.js:167:62)[39m[22m
 [1m[31m[39m[22m
 [7m[1m[36m NX [39m[22m[27m [1mProcess exited with code 1, waiting for changes to restart...[22m
+[ [32mwatch[39m ] build succeeded, watching for changes...
+[1m[31mStarting inspector on localhost:9229 failed: address already in use[39m[22m
+[1m[31m[39m[22m
+Starting Wing Monitor Controller API...
+Environment: development
+Mock Mode: true
+Initializing Wing Monitor Controller...
+Using Config: IP=192.168.1.70, MockMode=true
+[INFO] Running in MOCK MODE
+[1m[31mError: listen EADDRINUSE: address already in use :::3001[39m[22m
+[1m[31m    at Server.setupListenHandle [as _listen2] (node:net:1937:16)[39m[22m
+[1m[31m    at listenInCluster (node:net:1994:12)[39m[22m
+[1m[31m    at Server.listen (node:net:2099:7)[39m[22m
+[1m[31m    at /home/ubuntu/wing-monitor-controller-web/libs/monitor-backend/src/lib/monitor-backend.ts:122:19[39m[22m
+[1m[31m    at new Promise (<anonymous>)[39m[22m
+[1m[31m    at MonitorServer.<anonymous> (/home/ubuntu/wing-monitor-controller-web/libs/monitor-backend/src/lib/monitor-backend.ts:121:12)[39m[22m
+[1m[31m    at Generator.next (<anonymous>)[39m[22m
+[1m[31m    at fulfilled (/home/ubuntu/wing-monitor-controller-web/node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.js:167:62)[39m[22m
+[1m[31m[39m[22m
+[7m[1m[36m NX [39m[22m[27m [1mProcess exited with code 1, waiting for changes to restart...[22m
+[4m[34mlibs/monitor-backend/src/lib/monitor-backend.ts:60:40[39m[24m - [31m[1merror[22m[39m [90mTS2339[39m: Property 'wing' does not exist on type 'Settings'.
+[0m [90m 58 | [39m    [0m
+[0m [90m 59 | [39m    [90m// Override initial config with settings if available[39m[0m
+[0m[31m[1m>[22m[39m[90m 60 | [39m    [36mif[39m ([36mthis[39m[33m.[39msettings [33m&&[39m [36mthis[39m[33m.[39msettings[33m.[39mwing) {[0m
+[0m [90m    | [39m                                       [31m[1m^[22m[39m[0m
+[0m [90m 61 | [39m      console[33m.[39mlog([32m'Loading saved Wing configuration...'[39m)[33m;[39m[0m
+[0m [90m 62 | [39m      [36mthis[39m[33m.[39mconfig [33m=[39m [36mthis[39m[33m.[39msettings[33m.[39mwing[33m;[39m[0m
+[0m [90m 63 | [39m      [90m// Re-initialize controller with saved config[39m[0m
+[4m[34mlibs/monitor-backend/src/lib/monitor-backend.ts:62:35[39m[24m - [31m[1merror[22m[39m [90mTS2339[39m: Property 'wing' does not exist on type 'Settings'.
+[0m [90m 60 | [39m    [36mif[39m ([36mthis[39m[33m.[39msettings [33m&&[39m [36mthis[39m[33m.[39msettings[33m.[39mwing) {[0m
+[0m [90m 61 | [39m      console[33m.[39mlog([32m'Loading saved Wing configuration...'[39m)[33m;[39m[0m
+[0m[31m[1m>[22m[39m[90m 62 | [39m      [36mthis[39m[33m.[39mconfig [33m=[39m [36mthis[39m[33m.[39msettings[33m.[39mwing[33m;[39m[0m
+[0m [90m    | [39m                                  [31m[1m^[22m[39m[0m
+[0m [90m 63 | [39m      [90m// Re-initialize controller with saved config[39m[0m
+[0m [90m 64 | [39m      [36mthis[39m[33m.[39mwingController [33m=[39m [36mnew[39m [33mWingMonitorController[39m([36mthis[39m[33m.[39mconfig[33m,[39m [36mthis[39m[33m.[39mmockMode)[33m;[39m[0m
+[0m [90m 65 | [39m    }[0m
+Found 2 errors.
+[ [31mwatch[39m ] build finished with errors (see above), watching for changes...
+[1m[31mBuild failed, waiting for changes to restart...[39m[22m
+  #  Node.js[2355978]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+----- Native stack trace -----
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7f67e4045495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7f67e4045610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+  #  Node.js[2355978]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+----- Native stack trace -----
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 4: 0x7f67e4042520  [/lib/x86_64-linux-gnu/libc.so.6]
+
+
+
+ NX   Running target e2e for project api-e2e and 2 tasks it depends on failed
+
+Failed tasks:
+
+- api:serve:development
+
+Hint: run the command with --verbose for more details.
+
+
+  #  Node.js[2355144]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [node]
+ 2: 0xf42264  [node]
+ 3: 0x7f4aef645495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7f4aef645610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [node]
+ 7: 0x1d755e2  [node]
+
+  #  Node.js[2355144]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [node]
+ 2: 0xf42264  [node]
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [node]
+ 4: 0x7f4aef642520  [/lib/x86_64-linux-gnu/libc.so.6]
+
+  #  Node.js[2355223]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7f9c5be45495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7f9c5be45610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355263]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7fe1d3445495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7fe1d3445610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355263]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355230]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+----- Native stack trace -----
+
+
+  #  Node.js[2355251]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+
+  #  Node.js[2355242]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+----- Native stack trace -----
+
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7fb5a1645495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7fb5a1645610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355257]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7f5c79a45495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7f5c79a45610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+----- Native stack trace -----
+
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7f196b245495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7f196b245610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7f6efac45495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355230]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+ 4: 0x7f6efac45610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+----- Native stack trace -----
+
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 4: 0x7fe1d3442520  [/lib/x86_64-linux-gnu/libc.so.6]
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355224]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7f3986c45495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7f3986c45610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 4: 0x7fb5a1642520  [/lib/x86_64-linux-gnu/libc.so.6]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355242]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355251]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+
+  #  Node.js[2355222]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0x7ffb00e45495  [/lib/x86_64-linux-gnu/libc.so.6]
+ 4: 0x7ffb00e45610 on_exit [/lib/x86_64-linux-gnu/libc.so.6]
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 5: 0xe98a4f node::DefaultProcessExitHandlerInternal(node::Environment*, node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 6: 0xf01e4f node::Environment::Exit(node::ExitCode) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355224]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 7: 0x1d755e2  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355223]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355222]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+ 4: 0x7f196b242520  [/lib/x86_64-linux-gnu/libc.so.6]
+----- Native stack trace -----
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+
+  #  Node.js[2355257]: void node::ResetStdio() at ../src/node.cc:760
+  #  Assertion failed: !(err != 0) || (err == -1 && (*__errno_location ()) == 1)
+
+----- Native stack trace -----
+
+ 1: 0xf95cf7 node::Assert(node::AssertionInfo const&) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 4: 0x7f5c79a42520  [/lib/x86_64-linux-gnu/libc.so.6]
+ 2: 0xf42264  [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 4: 0x7ffb00e42520  [/lib/x86_64-linux-gnu/libc.so.6]
+ 3: 0xf42982 node::TrapWebAssemblyOrContinue(int, siginfo_t*, void*) [/home/ubuntu/.nvm/versions/node/v22.13.0/bin/node]
+ 4: 0x7f6efac42520  [/lib/x86_64-linux-gnu/libc.so.6]

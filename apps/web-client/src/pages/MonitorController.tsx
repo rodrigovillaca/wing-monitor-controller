@@ -134,6 +134,20 @@ export default function MonitorController() {
                   icon={<Wifi size={18} />}
                 />
               ))}
+              
+              {/* Aux Volume Knob */}
+              <div className="mt-4 flex flex-col items-center">
+                <div className="w-24 h-24">
+                  <VolumeKnob 
+                    value={state.auxLevel} 
+                    onChange={(val) => updateState({ auxLevel: val })}
+                    className="w-full h-full"
+                    displayUnit={settings.volumeUnit}
+                    unityLevel={settings.unityLevel}
+                  />
+                </div>
+                <span className="text-xs font-rajdhani text-muted-foreground mt-2">AUX LEVEL</span>
+              </div>
             </>
           )}
         </div>

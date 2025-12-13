@@ -198,6 +198,11 @@ export class MonitorServer {
           this.wingController.setVolume(payload);
         }
         break;
+      case "SET_AUX_VOLUME":
+        if (typeof payload === "number") {
+          this.wingController.setAuxVolume(payload);
+        }
+        break;
       case "SET_MUTE":
         if (typeof payload === "boolean") {
           this.wingController.setMute(payload);

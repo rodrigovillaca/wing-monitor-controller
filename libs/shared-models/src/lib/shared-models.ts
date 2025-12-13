@@ -41,6 +41,7 @@ export interface WingMonitorConfig {
 
 export interface MonitorState {
   mainLevel: number; // 0-100%
+  auxLevel: number;  // 0-100%
   isMuted: boolean;
   isDimmed: boolean;
   isMono: boolean;

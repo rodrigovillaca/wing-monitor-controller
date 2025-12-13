@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, ChevronDown, ChevronUp } from 'lucide-react';
+import { X, Save, ChevronDown, ChevronUp, Plus, Trash2 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { WingMonitorConfig } from '@wing-monitor/shared-models';
 
@@ -21,7 +21,7 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpenQueue, onToggleMockMode }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings>(initialSettings);
-  const [activeTab, setActiveTab] = useState<'general' | 'network' | 'inputs' | 'outputs' | 'subwoofer'>('general');
+  const [activeTab, setActiveTab] = useState<'general' | 'network' | 'inputs' | 'aux' | 'outputs' | 'subwoofer'>('general');
 
   useEffect(() => {
     setSettings(initialSettings);
@@ -54,10 +54,74 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
     });
   };
 
+  const addInput = () => {
+    if (!settings.wing) return;
+    const newInputs = [...settings.wing.monitorInputs, { name: 'New Input', sourceGroup: 'USB', sourceIndex: 1 }];
+    setSettings({
+      ...settings,
+      wing: { ...settings.wing, monitorInputs: newInputs }
+    });
+  };
+
+  const removeInput = (index: number) => {
+    if (!settings.wing) return;
+    const newInputs = settings.wing.monitorInputs.filter((_, i) => i !== index);
+    setSettings({
+      ...settings,
+      wing: { ...settings.wing, monitorInputs: newInputs }
+    });
+  };
+
+  const updateAuxInput = (index: number, field: string, value: any) => {
+    if (!settings.wing) return;
+    const newInputs = [...(settings.wing.auxInputs || [])];
+    newInputs[index] = { ...newInputs[index], [field]: value };
+    setSettings({
+      ...settings,
+      wing: { ...settings.wing, auxInputs: newInputs }
+    });
+  };
+
+  const addAuxInput = () => {
+    if (!settings.wing) return;
+    const newInputs = [...(settings.wing.auxInputs || []), { name: 'New Aux', sourceGroup: 'AUX', sourceIndex: 1 }];
+    setSettings({
+      ...settings,
+      wing: { ...settings.wing, auxInputs: newInputs }
+    });
+  };
+
+  const removeAuxInput = (index: number) => {
+    if (!settings.wing) return;
+    const newInputs = (settings.wing.auxInputs || []).filter((_, i) => i !== index);
+    setSettings({
+      ...settings,
+      wing: { ...settings.wing, auxInputs: newInputs }
+    });
+  };
+
   const updateOutput = (index: number, field: string, value: any) => {
     if (!settings.wing) return;
     const newOutputs = [...settings.wing.monitorMatrixOutputs];
     newOutputs[index] = { ...newOutputs[index], [field]: value };
+    setSettings({
+      ...settings,
+      wing: { ...settings.wing, monitorMatrixOutputs: newOutputs }
+    });
+  };
+
+  const addOutput = () => {
+    if (!settings.wing) return;
+    const newOutputs = [...settings.wing.monitorMatrixOutputs, { name: 'New Output', path: '/mtx/1' }];
+    setSettings({
+      ...settings,
+      wing: { ...settings.wing, monitorMatrixOutputs: newOutputs }
+    });
+  };
+
+  const removeOutput = (index: number) => {
+    if (!settings.wing) return;
+    const newOutputs = settings.wing.monitorMatrixOutputs.filter((_, i) => i !== index);
     setSettings({
       ...settings,
       wing: { ...settings.wing, monitorMatrixOutputs: newOutputs }
@@ -189,75 +253,179 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
   );
 
   const renderInputsTab = () => (
-    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-      {settings.wing?.monitorInputs.map((input, idx) => (
-        <div key={idx} className="bg-neu-base neu-flat p-4 rounded-xl space-y-3">
-          <div className="flex justify-between items-center">
-            <h4 className="font-rajdhani font-bold text-accent">Input {idx + 1}</h4>
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <button 
+          onClick={addInput}
+          className="flex items-center gap-2 text-xs font-rajdhani font-bold text-accent hover:text-accent/80 transition-colors"
+        >
+          <Plus size={14} /> ADD INPUT
+        </button>
+      </div>
+      <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4">
+        {settings.wing?.monitorInputs.map((input, idx) => (
+          <div key={idx} className="bg-neu-base neu-flat p-4 rounded-xl space-y-3 relative group">
+            <div className="flex justify-between items-center">
+              <h4 className="font-rajdhani font-bold text-accent">Input {idx + 1}</h4>
+              <button 
+                onClick={() => removeInput(idx)}
+                className="text-red-500/50 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+              >
+                <Trash2 size={16} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-rajdhani">Name</label>
+                <input
+                  type="text"
+                  value={input.name}
+                  onChange={(e) => updateInput(idx, 'name', e.target.value)}
+                  className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-rajdhani">Group</label>
+                <input
+                  type="text"
+                  value={input.sourceGroup}
+                  onChange={(e) => updateInput(idx, 'sourceGroup', e.target.value)}
+                  className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-rajdhani">Index</label>
+                <input
+                  type="number"
+                  value={input.sourceIndex}
+                  onChange={(e) => updateInput(idx, 'sourceIndex', Number(e.target.value))}
+                  className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                />
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-rajdhani">Name</label>
-              <input
-                type="text"
-                value={input.name}
-                onChange={(e) => updateInput(idx, 'name', e.target.value)}
-                className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-rajdhani">Group</label>
-              <input
-                type="text"
-                value={input.sourceGroup}
-                onChange={(e) => updateInput(idx, 'sourceGroup', e.target.value)}
-                className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
-              />
-            </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-rajdhani">Index</label>
-              <input
-                type="number"
-                value={input.sourceIndex}
-                onChange={(e) => updateInput(idx, 'sourceIndex', Number(e.target.value))}
-                className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
-              />
-            </div>
-          </div>
+        ))}
+      </div>
+    </div>
+  );
+
+  const renderAuxTab = () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <label className="font-rajdhani font-semibold text-foreground/80 block">Aux Monitor Channel</label>
+        <input
+          type="text"
+          value={settings.wing?.auxMonitor?.path || '/aux/8'}
+          onChange={(e) => updateWingConfig('auxMonitor.path', e.target.value)}
+          className="w-full bg-neu-base neu-pressed p-3 rounded-xl text-foreground font-rajdhani font-bold outline-none focus:ring-2 focus:ring-accent/50"
+          placeholder="/aux/8"
+        />
+      </div>
+      
+      <div className="border-t border-gray-800/50 pt-4 space-y-4">
+        <div className="flex justify-between items-center">
+          <h3 className="font-rajdhani font-semibold text-foreground/80">Aux Inputs</h3>
+          <button 
+            onClick={addAuxInput}
+            className="flex items-center gap-2 text-xs font-rajdhani font-bold text-accent hover:text-accent/80 transition-colors"
+          >
+            <Plus size={14} /> ADD AUX INPUT
+          </button>
         </div>
-      ))}
+        
+        <div className="max-h-[300px] overflow-y-auto pr-2 space-y-4">
+          {(settings.wing?.auxInputs || []).map((input, idx) => (
+            <div key={idx} className="bg-neu-base neu-flat p-4 rounded-xl space-y-3 relative group">
+              <div className="flex justify-between items-center">
+                <h4 className="font-rajdhani font-bold text-accent">Aux Input {idx + 1}</h4>
+                <button 
+                  onClick={() => removeAuxInput(idx)}
+                  className="text-red-500/50 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                >
+                  <Trash2 size={16} />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground font-rajdhani">Name</label>
+                  <input
+                    type="text"
+                    value={input.name}
+                    onChange={(e) => updateAuxInput(idx, 'name', e.target.value)}
+                    className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground font-rajdhani">Group</label>
+                  <input
+                    type="text"
+                    value={input.sourceGroup}
+                    onChange={(e) => updateAuxInput(idx, 'sourceGroup', e.target.value)}
+                    className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground font-rajdhani">Index</label>
+                  <input
+                    type="number"
+                    value={input.sourceIndex}
+                    onChange={(e) => updateAuxInput(idx, 'sourceIndex', Number(e.target.value))}
+                    className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                  />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 
   const renderOutputsTab = () => (
-    <div className="space-y-4 max-h-[400px] overflow-y-auto pr-2">
-      {settings.wing?.monitorMatrixOutputs.map((output, idx) => (
-        <div key={idx} className="bg-neu-base neu-flat p-4 rounded-xl space-y-3">
-          <div className="flex justify-between items-center">
-            <h4 className="font-rajdhani font-bold text-accent">Output {idx + 1}</h4>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-rajdhani">Name</label>
-              <input
-                type="text"
-                value={output.name}
-                onChange={(e) => updateOutput(idx, 'name', e.target.value)}
-                className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
-              />
+    <div className="space-y-4">
+      <div className="flex justify-end">
+        <button 
+          onClick={addOutput}
+          className="flex items-center gap-2 text-xs font-rajdhani font-bold text-accent hover:text-accent/80 transition-colors"
+        >
+          <Plus size={14} /> ADD OUTPUT
+        </button>
+      </div>
+      <div className="max-h-[400px] overflow-y-auto pr-2 space-y-4">
+        {settings.wing?.monitorMatrixOutputs.map((output, idx) => (
+          <div key={idx} className="bg-neu-base neu-flat p-4 rounded-xl space-y-3 relative group">
+            <div className="flex justify-between items-center">
+              <h4 className="font-rajdhani font-bold text-accent">Output {idx + 1}</h4>
+              <button 
+                onClick={() => removeOutput(idx)}
+                className="text-red-500/50 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+              >
+                <Trash2 size={16} />
+              </button>
             </div>
-            <div className="space-y-1">
-              <label className="text-xs text-muted-foreground font-rajdhani">Path</label>
-              <input
-                type="text"
-                value={output.path}
-                onChange={(e) => updateOutput(idx, 'path', e.target.value)}
-                className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
-              />
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-rajdhani">Name</label>
+                <input
+                  type="text"
+                  value={output.name}
+                  onChange={(e) => updateOutput(idx, 'name', e.target.value)}
+                  className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground font-rajdhani">Path</label>
+                <input
+                  type="text"
+                  value={output.path}
+                  onChange={(e) => updateOutput(idx, 'path', e.target.value)}
+                  className="w-full bg-neu-base neu-pressed p-2 rounded-lg text-sm font-rajdhani outline-none focus:ring-1 focus:ring-accent/50"
+                />
+              </div>
             </div>
           </div>
-        </div>
-      ))}
+        ))}
+      </div>
     </div>
   );
 
@@ -301,7 +469,7 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
         </div>
 
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {(['general', 'network', 'inputs', 'outputs', 'subwoofer'] as const).map((tab) => (
+          {(['general', 'network', 'inputs', 'aux', 'outputs', 'subwoofer'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -319,6 +487,7 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
           {activeTab === 'general' && renderGeneralTab()}
           {activeTab === 'network' && renderNetworkTab()}
           {activeTab === 'inputs' && renderInputsTab()}
+          {activeTab === 'aux' && renderAuxTab()}
           {activeTab === 'outputs' && renderOutputsTab()}
           {activeTab === 'subwoofer' && renderSubwooferTab()}
         </div>

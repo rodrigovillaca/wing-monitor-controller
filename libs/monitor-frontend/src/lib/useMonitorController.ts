@@ -31,6 +31,7 @@ export function useMonitorController() {
 
   const [state, setState] = useState<MonitorState>({
     mainLevel: 0,
+    auxLevel: 0,
     isMuted: false,
     isDimmed: false,
     isMono: false,
@@ -65,8 +66,8 @@ export function useMonitorController() {
       { id: 2, name: 'Mini Cube' }
     ]);
     setAuxInputs([
-      { id: 10, name: 'Bluetooth' },
-      { id: 11, name: 'Talkback Mic' }
+      { id: 0, name: 'Bluetooth' },
+      { id: 1, name: 'Talkback Mic' }
     ]);
     
     // Initialize mock settings if not already set
@@ -203,7 +204,7 @@ export function useMonitorController() {
         // Also update inputs/outputs if they changed
         if (payload.wing) {
           setInputs(payload.wing.monitorInputs.map((i: any, idx: number) => ({ id: idx, name: i.name })));
-          setAuxInputs(payload.wing.auxInputs.map((i: any, idx: number) => ({ id: idx + 10, name: i.name })));
+          setAuxInputs(payload.wing.auxInputs.map((i: any, idx: number) => ({ id: idx, name: i.name })));
           setOutputs(payload.wing.monitorMatrixOutputs.map((o: any, idx: number) => ({ id: idx, name: o.name })));
         }
       }
@@ -220,6 +221,7 @@ export function useMonitorController() {
     
     // Send commands based on updates
     if (updates.mainLevel !== undefined) sendCommand('SET_VOLUME', updates.mainLevel);
+    if (updates.auxLevel !== undefined) sendCommand('SET_AUX_VOLUME', updates.auxLevel);
     if (updates.isMuted !== undefined) sendCommand('SET_MUTE', updates.isMuted);
     if (updates.isDimmed !== undefined) sendCommand('SET_DIM', updates.isDimmed);
     if (updates.isMono !== undefined) sendCommand('SET_MONO', updates.isMono);
