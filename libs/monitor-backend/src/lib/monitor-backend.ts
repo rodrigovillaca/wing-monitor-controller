@@ -18,6 +18,8 @@ export class MonitorServer {
   private port: number;
   private mockMode: boolean;
   private staticPath: string;
+  private logs: string[] = [];
+  private maxLogs = 100;
 
   constructor(
     config: WingMonitorConfig, 
@@ -34,6 +36,26 @@ export class MonitorServer {
     this.server = createServer(this.app);
     this.wss = new WebSocketServer({ server: this.server });
     
+    // Override console.log and console.error to capture logs
+    const originalLog = console.log;
+    const originalError = console.error;
+
+    console.log = (...args) => {
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ');
+      this.addLog('INFO', message);
+      originalLog.apply(console, args);
+    };
+
+    console.error = (...args) => {
+      const message = args.map(arg => 
+        typeof arg === 'object' ? JSON.stringify(arg) : String(arg)
+      ).join(' ');
+      this.addLog('ERROR', message);
+      originalError.apply(console, args);
+    };
+
     console.log('Initializing Wing Monitor Controller...');
     console.log(`Using Config: IP=${config.network.ipAddress}, MockMode=${mockMode}`);
     
@@ -115,6 +137,12 @@ export class MonitorServer {
         }));
       }
 
+      // Send existing logs
+      ws.send(JSON.stringify({
+        type: 'LOGS_UPDATE',
+        payload: this.logs
+      }));
+
       ws.on('message', (message) => {
         try {
           const data = JSON.parse(message.toString());
@@ -179,6 +207,28 @@ export class MonitorServer {
     this.wss.clients.forEach((client) => {
       if (client.readyState === WebSocket.OPEN) {
         client.send(message);
+      }
+    });
+  }
+
+  private addLog(level: 'INFO' | 'ERROR', message: string) {
+    const timestamp = new Date().toISOString();
+    const logEntry = `[${timestamp}] [${level}] ${message}`;
+    
+    this.logs.push(logEntry);
+    if (this.logs.length > this.maxLogs) {
+      this.logs.shift();
+    }
+
+    // Broadcast new log
+    const updateMessage = JSON.stringify({
+      type: 'LOG_ENTRY',
+      payload: logEntry
+    });
+
+    this.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(updateMessage);
       }
     });
   }

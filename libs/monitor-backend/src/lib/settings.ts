@@ -18,6 +18,7 @@ const DEFAULT_WING_CONFIG: WingMonitorConfig = {
   },
   monitorMain: {
     path: '/ch/40',
+    busPath: '/bus/4',
     trim: 0
   },
   auxMonitor: {

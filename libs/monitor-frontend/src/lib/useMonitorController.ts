@@ -48,6 +48,7 @@ export function useMonitorController() {
   const [outputs, setOutputs] = useState<ConfigItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [queue, setQueue] = useState<CommandQueueItem[]>([]);
+  const [logs, setLogs] = useState<string[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
   const shouldReconnect = useRef(true);
 
@@ -83,6 +84,7 @@ export function useMonitorController() {
         },
         monitorMain: {
           path: '/ch/40',
+          busPath: '/bus/4',
           trim: 0
         },
         auxMonitor: {
@@ -164,6 +166,10 @@ export function useMonitorController() {
           setSettings(prev => ({ ...data.payload, mockMode: prev.mockMode }));
         } else if (data.type === 'QUEUE_UPDATE') {
           setQueue(data.payload);
+        } else if (data.type === 'LOGS_UPDATE') {
+          setLogs(data.payload);
+        } else if (data.type === 'LOG_ENTRY') {
+          setLogs(prev => [...prev, data.payload].slice(-100));
         }
       } catch (e) {
         console.error('Error parsing message', e);
@@ -270,6 +276,7 @@ export function useMonitorController() {
     toggleAux,
     handleSaveSettings,
     queue,
+    logs,
     clearQueue: () => sendCommand('CLEAR_QUEUE', null),
     disconnect,
     connect,

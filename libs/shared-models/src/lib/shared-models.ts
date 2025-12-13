@@ -27,6 +27,7 @@ export interface WingMonitorConfig {
   network: NetworkConfig;
   monitorMain: {
     path: string; // The fixed channel used for main monitor input (e.g., /ch/40)
+    busPath: string; // The main bus path (e.g., /bus/4)
     trim?: number;
   };
   auxMonitor?: {
@@ -63,3 +64,8 @@ export const APP_CONFIG = {
   API_PORT: 3001,
   WEB_PORT: 3000,
 };
+
+export interface WebSocketMessage {
+  type: 'STATE_UPDATE' | 'SETTINGS_UPDATE' | 'QUEUE_UPDATE' | 'LOGS_UPDATE' | 'LOG_ENTRY';
+  payload: any;
+}

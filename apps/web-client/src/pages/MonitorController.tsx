@@ -4,6 +4,7 @@ import { NeuButton } from '@/components/NeuButton';
 import { StereoMeter } from '@/components/StereoMeter';
 import { SettingsModal } from '@/components/SettingsModal';
 import { CommandQueueModal } from '@/components/CommandQueueModal';
+import { LogViewerModal } from '@/components/LogViewerModal';
 import { useMonitorController } from '@wing-monitor/monitor-frontend';
 import { cn } from '@/lib/utils';
 import { 
@@ -17,7 +18,8 @@ import {
   Music2,
   Wifi,
   Power,
-  Settings as SettingsIcon
+  Settings as SettingsIcon,
+  Terminal
 } from 'lucide-react';
 
 export default function MonitorController() {
@@ -34,6 +36,7 @@ export default function MonitorController() {
     toggleAux,
     handleSaveSettings,
     queue,
+    logs,
     clearQueue,
     disconnect,
     connect,
@@ -41,6 +44,7 @@ export default function MonitorController() {
   } = useMonitorController();
 
   const [isQueueOpen, setIsQueueOpen] = React.useState(false);
+  const [isLogsOpen, setIsLogsOpen] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-neu-base flex items-center justify-center p-8">
@@ -60,6 +64,11 @@ export default function MonitorController() {
         onClose={() => setIsQueueOpen(false)}
         queue={queue}
         onClear={clearQueue}
+      />
+      <LogViewerModal
+        isOpen={isLogsOpen}
+        onClose={() => setIsLogsOpen(false)}
+        logs={logs}
       />
       <div className="neu-flat p-12 max-w-6xl w-full grid grid-cols-12 gap-8 relative overflow-hidden">
         
@@ -245,13 +254,24 @@ export default function MonitorController() {
           </div>
         </div>
 
-        {/* Settings Button - Moved to bottom right */}
-        <button 
-          onClick={() => setIsSettingsOpen(true)}
-          className="absolute bottom-6 right-6 text-muted-foreground hover:text-foreground transition-colors z-50 p-2 hover:bg-black/10 rounded-full"
-        >
-          <SettingsIcon size={24} />
-        </button>
+        {/* Floating Action Buttons - Bottom Right */}
+        <div className="absolute bottom-6 right-6 flex gap-2 z-50">
+          <button
+            onClick={() => setIsLogsOpen(true)}
+            className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/10 transition-colors"
+            title="Backend Logs"
+          >
+            <Terminal size={24} />
+          </button>
+          
+          <button 
+            onClick={() => setIsSettingsOpen(true)}
+            className="p-2 rounded-full text-muted-foreground hover:text-foreground hover:bg-black/10 transition-colors"
+            title="Settings"
+          >
+            <SettingsIcon size={24} />
+          </button>
+        </div>
 
       </div>
     </div>

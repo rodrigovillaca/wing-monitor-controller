@@ -10,6 +10,7 @@ export const config: WingMonitorConfig = {
   },
   monitorMain: {
     path: '/ch/40', // Fixed channel used for Monitor Input (Source Patching Destination)
+    busPath: '/bus/4', // Main bus path
     trim: 0
   },
   auxMonitor: {

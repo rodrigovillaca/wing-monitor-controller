@@ -99,6 +99,12 @@ export class WingMonitorController extends EventEmitter {
     this.sendOsc(this.config.monitorMain.path + '/fdr', []);
     this.sendOsc(this.config.monitorMain.path + '/mute', []);
     
+    // Query Main Bus if configured
+    if (this.config.monitorMain.busPath) {
+      this.sendOsc(this.config.monitorMain.busPath + '/fdr', []);
+      this.sendOsc(this.config.monitorMain.busPath + '/mute', []);
+    }
+    
     // Query Aux Monitor
     if (this.config.auxMonitor) {
       this.sendOsc(this.config.auxMonitor.path + '/fdr', []);
@@ -187,6 +193,11 @@ export class WingMonitorController extends EventEmitter {
     // Control the Monitor Main Channel Fader
     const monitorChannelPath = this.config.monitorMain.path;
     this.sendOsc(`${monitorChannelPath}/fdr`, [{ type: 'f', value: faderValue }]);
+
+    // Also control the Main Bus Fader if configured
+    if (this.config.monitorMain.busPath) {
+      this.sendOsc(`${this.config.monitorMain.busPath}/fdr`, [{ type: 'f', value: faderValue }]);
+    }
   }
 
   public setAuxVolume(percent: number) {
@@ -209,6 +220,11 @@ export class WingMonitorController extends EventEmitter {
     
     const monitorChannelPath = this.config.monitorMain.path;
     this.sendOsc(`${monitorChannelPath}/mute`, [{ type: 'i', value: muted ? 1 : 0 }]); // 1 is muted
+
+    // Also mute the Main Bus if configured
+    if (this.config.monitorMain.busPath) {
+      this.sendOsc(`${this.config.monitorMain.busPath}/mute`, [{ type: 'i', value: muted ? 1 : 0 }]);
+    }
     
     if (this.config.auxMonitor) {
         const auxChannelPath = this.config.auxMonitor.path;
@@ -400,7 +416,7 @@ export class WingMonitorController extends EventEmitter {
     // Handle fader updates
     if (msg.address.endsWith('/fdr')) {
       const val = msg.args[0].value;
-      if (msg.address.includes(this.config.monitorMain.path)) {
+      if (msg.address.includes(this.config.monitorMain.path) || (this.config.monitorMain.busPath && msg.address.includes(this.config.monitorMain.busPath))) {
         this.state.mainLevel = Math.round(val * 100);
         this.emitStateChange();
       } else if (this.config.auxMonitor && msg.address.includes(this.config.auxMonitor.path)) {
@@ -412,7 +428,7 @@ export class WingMonitorController extends EventEmitter {
     // Handle mute updates
     if (msg.address.endsWith('/mute')) {
       const val = msg.args[0].value;
-      if (msg.address.includes(this.config.monitorMain.path)) {
+      if (msg.address.includes(this.config.monitorMain.path) || (this.config.monitorMain.busPath && msg.address.includes(this.config.monitorMain.busPath))) {
         this.state.isMuted = val === 1;
         this.emitStateChange();
       }
