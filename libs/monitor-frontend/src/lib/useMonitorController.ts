@@ -10,6 +10,7 @@ export interface AppSettings {
   volumeUnit: 'percent' | 'db';
   unityLevel: number;
   wing?: WingMonitorConfig;
+  mockMode?: boolean;
 }
 
 export interface CommandQueueItem {
@@ -24,7 +25,8 @@ export function useMonitorController() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings>({
     volumeUnit: 'db',
-    unityLevel: 75
+    unityLevel: 75,
+    mockMode: import.meta.env.VITE_MOCK_MODE === 'true'
   });
 
   const [state, setState] = useState<MonitorState>({
@@ -48,66 +50,70 @@ export function useMonitorController() {
   const wsRef = useRef<WebSocket | null>(null);
   const shouldReconnect = useRef(true);
 
+  // Initialize mock data helper
+  const initMockData = useCallback(() => {
+    console.log('Initializing MOCK MODE data');
+    setIsConnected(true);
+    setInputs([
+      { id: 0, name: 'DAW 1-2' },
+      { id: 1, name: 'Mac System' },
+      { id: 2, name: 'Reference' }
+    ]);
+    setOutputs([
+      { id: 0, name: 'Main Monitors' },
+      { id: 1, name: 'Nearfields' },
+      { id: 2, name: 'Mini Cube' }
+    ]);
+    setAuxInputs([
+      { id: 10, name: 'Bluetooth' },
+      { id: 11, name: 'Talkback Mic' }
+    ]);
+    
+    // Initialize mock settings if not already set
+    setSettings(prev => ({
+      ...prev,
+      wing: prev.wing || {
+        network: {
+          ipAddress: '192.168.1.70',
+          wingPort: 10024,
+          localPort: 9000,
+          retryAttempts: 3,
+          retryDelay: 100,
+        },
+        monitorMain: {
+          path: '/ch/40',
+          trim: 0
+        },
+        auxMonitor: {
+          path: '/aux/8',
+          trim: 0
+        },
+        monitorInputs: [
+          { name: 'DAW 1-2', sourceGroup: 'USB', sourceIndex: 1 },
+          { name: 'Mac System', sourceGroup: 'USB', sourceIndex: 3 },
+          { name: 'Reference', sourceGroup: 'AES50A', sourceIndex: 1 },
+        ],
+        auxInputs: [
+          { name: 'Bluetooth', sourceGroup: 'AUX', sourceIndex: 1 },
+          { name: 'Talkback Mic', sourceGroup: 'AUX', sourceIndex: 3 },
+        ],
+        monitorMatrixOutputs: [
+          { name: 'Main Monitors', path: '/mtx/1' },
+          { name: 'Nearfields', path: '/mtx/2' },
+          { name: 'Mini Cube', path: '/mtx/3' }
+        ],
+        subwoofer: {
+          path: '/mtx/4',
+          trim: 0,
+        }
+      }
+    }));
+  }, []);
+
   const connect = useCallback(() => {
     // Check for Mock Mode
-    if (import.meta.env.VITE_MOCK_MODE === 'true') {
-      console.log('Running in MOCK MODE');
-      setIsConnected(true);
-      setInputs([
-        { id: 0, name: 'DAW 1-2' },
-        { id: 1, name: 'Mac System' },
-        { id: 2, name: 'Reference' }
-      ]);
-      setOutputs([
-        { id: 0, name: 'Main Monitors' },
-        { id: 1, name: 'Nearfields' },
-        { id: 2, name: 'Mini Cube' }
-      ]);
-      setAuxInputs([
-        { id: 10, name: 'Bluetooth' },
-        { id: 11, name: 'Talkback Mic' }
-      ]);
-      
-      // Initialize mock settings
-      setSettings({
-        volumeUnit: 'db',
-        unityLevel: 75,
-        wing: {
-          network: {
-            ipAddress: '192.168.1.70',
-            wingPort: 10024,
-            localPort: 9000,
-            retryAttempts: 3,
-            retryDelay: 100,
-          },
-          monitorMain: {
-            path: '/ch/40',
-            trim: 0
-          },
-          auxMonitor: {
-            path: '/aux/8',
-            trim: 0
-          },
-          monitorInputs: [
-            { name: 'DAW 1-2', sourceGroup: 'USB', sourceIndex: 1 },
-            { name: 'Mac System', sourceGroup: 'USB', sourceIndex: 3 },
-            { name: 'Reference', sourceGroup: 'AES50A', sourceIndex: 1 },
-          ],
-          auxInputs: [
-            { name: 'Bluetooth', sourceGroup: 'AUX', sourceIndex: 1 },
-            { name: 'Talkback Mic', sourceGroup: 'AUX', sourceIndex: 3 },
-          ],
-          monitorMatrixOutputs: [
-            { name: 'Main Monitors', path: '/mtx/1' },
-            { name: 'Nearfields', path: '/mtx/2' },
-            { name: 'Mini Cube', path: '/mtx/3' }
-          ],
-          subwoofer: {
-            path: '/mtx/4',
-            trim: 0,
-          }
-        }
-      });
+    if (settings.mockMode) {
+      initMockData();
       return;
     }
 
@@ -154,7 +160,7 @@ export function useMonitorController() {
           setOutputs(data.payload.outputs);
         } else if (data.type === 'SETTINGS_UPDATE') {
           console.log('Received SETTINGS_UPDATE:', data.payload);
-          setSettings(data.payload);
+          setSettings(prev => ({ ...data.payload, mockMode: prev.mockMode }));
         } else if (data.type === 'QUEUE_UPDATE') {
           setQueue(data.payload);
         }
@@ -162,10 +168,10 @@ export function useMonitorController() {
         console.error('Error parsing message', e);
       }
     };
-  }, []);
+  }, [settings.mockMode, initMockData]);
 
   const disconnect = useCallback(() => {
-    if (import.meta.env.VITE_MOCK_MODE === 'true') {
+    if (settings.mockMode) {
       setIsConnected(false);
       return;
     }
@@ -173,9 +179,11 @@ export function useMonitorController() {
     if (wsRef.current) {
       wsRef.current.close();
     }
-  }, []);
+  }, [settings.mockMode]);
 
+  // Re-connect when mock mode changes
   useEffect(() => {
+    disconnect();
     connect();
 
     return () => {
@@ -184,14 +192,14 @@ export function useMonitorController() {
         wsRef.current.close();
       }
     };
-  }, [connect]);
+  }, [connect, disconnect, settings.mockMode]);
 
   const sendCommand = (type: string, payload: any) => {
-    if (import.meta.env.VITE_MOCK_MODE === 'true') {
+    if (settings.mockMode) {
       console.log('Mock Command:', type, payload);
       // Update local settings in mock mode
       if (type === 'SAVE_SETTINGS') {
-        setSettings(payload);
+        setSettings(prev => ({ ...payload, mockMode: prev.mockMode }));
         // Also update inputs/outputs if they changed
         if (payload.wing) {
           setInputs(payload.wing.monitorInputs.map((i: any, idx: number) => ({ id: idx, name: i.name })));
@@ -236,9 +244,15 @@ export function useMonitorController() {
   };
 
   const handleSaveSettings = (newSettings: AppSettings) => {
-    setSettings(newSettings);
-    sendCommand('SAVE_SETTINGS', newSettings);
+    // Preserve mock mode state when saving other settings
+    const settingsToSave = { ...newSettings, mockMode: settings.mockMode };
+    setSettings(settingsToSave);
+    sendCommand('SAVE_SETTINGS', settingsToSave);
     setIsSettingsOpen(false);
+  };
+
+  const toggleMockMode = () => {
+    setSettings(prev => ({ ...prev, mockMode: !prev.mockMode }));
   };
 
   return {
@@ -256,6 +270,7 @@ export function useMonitorController() {
     queue,
     clearQueue: () => sendCommand('CLEAR_QUEUE', null),
     disconnect,
-    connect
+    connect,
+    toggleMockMode
   };
 }

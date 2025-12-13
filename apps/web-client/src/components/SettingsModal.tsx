@@ -7,6 +7,7 @@ interface Settings {
   volumeUnit: 'percent' | 'db';
   unityLevel: number;
   wing?: WingMonitorConfig;
+  mockMode?: boolean;
 }
 
 interface SettingsModalProps {
@@ -15,9 +16,10 @@ interface SettingsModalProps {
   onSave: (settings: Settings) => void;
   initialSettings: Settings;
   onOpenQueue: () => void;
+  onToggleMockMode?: () => void;
 }
 
-export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpenQueue }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpenQueue, onToggleMockMode }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings>(initialSettings);
   const [activeTab, setActiveTab] = useState<'general' | 'network' | 'inputs' | 'outputs' | 'subwoofer'>('general');
 
@@ -64,6 +66,28 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
 
   const renderGeneralTab = () => (
     <div className="space-y-6">
+      {/* Mock Mode Toggle */}
+      <div className="space-y-2 p-4 bg-neu-base neu-flat rounded-xl border border-accent/20">
+        <div className="flex justify-between items-center">
+          <div>
+            <label className="font-rajdhani font-bold text-accent block">MOCK MODE</label>
+            <p className="text-xs text-muted-foreground font-rajdhani">Simulate console connection for testing</p>
+          </div>
+          <button
+            onClick={onToggleMockMode}
+            className={cn(
+              "w-12 h-6 rounded-full transition-colors relative",
+              settings.mockMode ? "bg-accent" : "bg-gray-700"
+            )}
+          >
+            <div className={cn(
+              "absolute top-1 w-4 h-4 rounded-full bg-white transition-all",
+              settings.mockMode ? "left-7" : "left-1"
+            )} />
+          </button>
+        </div>
+      </div>
+
       {/* Volume Unit Setting */}
       <div className="space-y-2">
         <label className="font-rajdhani font-semibold text-foreground/80 block">Volume Display Unit</label>
@@ -271,7 +295,7 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-neu-base p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-800 max-h-[90vh] flex flex-col">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-rajdhani font-bold text-2xl text-foreground tracking-wider">SETTINGS</h2>

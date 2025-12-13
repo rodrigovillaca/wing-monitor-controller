@@ -36,7 +36,8 @@ export default function MonitorController() {
     queue,
     clearQueue,
     disconnect,
-    connect
+    connect,
+    toggleMockMode
   } = useMonitorController();
 
   const [isQueueOpen, setIsQueueOpen] = React.useState(false);
@@ -52,6 +53,7 @@ export default function MonitorController() {
           setIsSettingsOpen(false);
           setIsQueueOpen(true);
         }}
+        onToggleMockMode={toggleMockMode}
       />
       <CommandQueueModal
         isOpen={isQueueOpen}
@@ -60,13 +62,6 @@ export default function MonitorController() {
         onClear={clearQueue}
       />
       <div className="neu-flat p-12 max-w-6xl w-full grid grid-cols-12 gap-8 relative overflow-hidden">
-        {/* Settings Button */}
-        <button 
-          onClick={() => setIsSettingsOpen(true)}
-          className="absolute top-6 right-6 text-muted-foreground hover:text-foreground transition-colors z-50"
-        >
-          <SettingsIcon size={24} />
-        </button>
         
         {/* Header / Branding */}
         <div className="col-span-12 flex justify-between items-center mb-4 border-b border-gray-300/30 pb-4 z-50 relative">
@@ -235,6 +230,14 @@ export default function MonitorController() {
             )}
           </div>
         </div>
+
+        {/* Settings Button - Moved to bottom right */}
+        <button 
+          onClick={() => setIsSettingsOpen(true)}
+          className="absolute bottom-6 right-6 text-muted-foreground hover:text-foreground transition-colors z-50 p-2 hover:bg-black/10 rounded-full"
+        >
+          <SettingsIcon size={24} />
+        </button>
 
       </div>
     </div>
