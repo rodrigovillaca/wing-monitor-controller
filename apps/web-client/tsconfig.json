@@ -13,7 +13,8 @@
     "paths": {
       "@/*": ["apps/web-client/src/*"],
       "@wing-monitor/shared-models": ["libs/shared-models/src/index.ts"],
-      "@wing-monitor/wing-controller": ["libs/wing-controller/src/index.ts"]
+      "@wing-monitor/wing-controller": ["libs/wing-controller/src/index.ts"],
+      "@wing-monitor/monitor-frontend": ["libs/monitor-frontend/src/index.ts"]
     }
   },
   "files": [],
