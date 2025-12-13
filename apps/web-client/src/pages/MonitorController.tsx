@@ -43,7 +43,8 @@ export default function MonitorController() {
     clearQueue,
     disconnect,
     connect,
-    toggleMockMode
+    toggleMockMode,
+    sendOscCommand
   } = useMonitorController();
 
   const [isQueueOpen, setIsQueueOpen] = React.useState(false);
@@ -72,6 +73,7 @@ export default function MonitorController() {
         isOpen={isLogsOpen}
         onClose={() => setIsLogsOpen(false)}
         logs={logs}
+        onSendCommand={sendOscCommand}
       />
       <div className="neu-flat p-12 max-w-6xl w-full grid grid-cols-12 gap-8 relative overflow-hidden">
         
@@ -98,6 +100,15 @@ export default function MonitorController() {
                   <div className="flex flex-col text-[10px] leading-tight text-muted-foreground font-mono">
                     <span>PING: {ping}ms</span>
                     <span>OSC: {trafficRate}/s</span>
+                  </div>
+                  <div className="h-4 w-[1px] bg-gray-300/30 mx-2" />
+                  <div className="flex flex-col text-[10px] leading-tight text-muted-foreground font-mono">
+                    <span className={cn(
+                      queue.filter(q => q.status === 'pending').length > 5 ? "text-yellow-500" : 
+                      queue.filter(q => q.status === 'pending').length > 20 ? "text-red-500" : ""
+                    )}>
+                      Q: {queue.filter(q => q.status === 'pending').length}
+                    </span>
                   </div>
                 </>
               ) : (

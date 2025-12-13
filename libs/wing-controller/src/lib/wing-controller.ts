@@ -371,7 +371,7 @@ export class WingMonitorController extends EventEmitter {
 
   // --- Private Helper Methods ---
 
-  private sendOsc(address: string, args: any[]) {
+  public sendOsc(address: string, args: any[]) {
     const id = Math.random().toString(36).substring(7);
     const command = { 
       id, 

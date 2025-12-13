@@ -6,10 +6,13 @@ interface LogViewerModalProps {
   isOpen: boolean;
   onClose: () => void;
   logs: string[];
+  onSendCommand: (address: string, args: any[]) => void;
 }
 
-export function LogViewerModal({ isOpen, onClose, logs }: LogViewerModalProps) {
+export function LogViewerModal({ isOpen, onClose, logs, onSendCommand }: LogViewerModalProps) {
   const logsEndRef = useRef<HTMLDivElement>(null);
+  const [command, setCommand] = React.useState('');
+  const [args, setArgs] = React.useState('');
 
   useEffect(() => {
     if (isOpen && logsEndRef.current) {
@@ -71,10 +74,82 @@ export function LogViewerModal({ isOpen, onClose, logs }: LogViewerModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-border bg-muted/30 flex justify-between items-center">
-          <span className="text-xs text-muted-foreground">
-            Showing last {logs.length} lines
-          </span>
+        <div className="p-4 border-t border-border bg-muted/30 flex flex-col gap-4">
+          <div className="flex gap-2">
+            <input 
+              type="text" 
+              placeholder="/osc/address" 
+              className="flex-1 bg-background border border-input px-3 py-2 rounded text-sm font-mono"
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && command) {
+                  // Parse args if any
+                  let parsedArgs: any[] = [];
+                  if (args) {
+                    try {
+                      // Try to parse as JSON array first
+                      if (args.startsWith('[')) {
+                        parsedArgs = JSON.parse(args);
+                      } else {
+                        // Split by comma and try to infer types
+                        parsedArgs = args.split(',').map(a => {
+                          const trimmed = a.trim();
+                          if (!isNaN(Number(trimmed))) return { type: 'f', value: Number(trimmed) };
+                          return { type: 's', value: trimmed };
+                        });
+                      }
+                    } catch (e) {
+                      console.error('Failed to parse args', e);
+                    }
+                  }
+                  onSendCommand(command, parsedArgs);
+                  setCommand('');
+                  setArgs('');
+                }
+              }}
+            />
+            <input 
+              type="text" 
+              placeholder="Args (e.g. 0.5 or [1, 0])" 
+              className="w-1/3 bg-background border border-input px-3 py-2 rounded text-sm font-mono"
+              value={args}
+              onChange={(e) => setArgs(e.target.value)}
+            />
+            <button 
+              className="bg-primary text-primary-foreground px-4 py-2 rounded text-sm font-bold hover:bg-primary/90"
+              onClick={() => {
+                if (command) {
+                  let parsedArgs: any[] = [];
+                  if (args) {
+                    try {
+                      if (args.startsWith('[')) {
+                        parsedArgs = JSON.parse(args);
+                      } else {
+                        parsedArgs = args.split(',').map(a => {
+                          const trimmed = a.trim();
+                          if (!isNaN(Number(trimmed))) return { type: 'f', value: Number(trimmed) };
+                          return { type: 's', value: trimmed };
+                        });
+                      }
+                    } catch (e) {
+                      console.error('Failed to parse args', e);
+                    }
+                  }
+                  onSendCommand(command, parsedArgs);
+                  setCommand('');
+                  setArgs('');
+                }
+              }}
+            >
+              SEND
+            </button>
+          </div>
+          <div className="flex justify-between items-center">
+            <span className="text-xs text-muted-foreground">
+              Showing last {logs.length} lines
+            </span>
+          </div>
         </div>
       </div>
     </div>

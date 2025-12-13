@@ -411,6 +411,18 @@ export class MonitorServer {
       case "CONNECT":
         this.wingController.connect();
         break;
+      case "SEND_OSC":
+        if (
+          typeof payload === "object" &&
+          payload !== null &&
+          "address" in payload
+        ) {
+          const { address, args } = payload as { address: string, args: any[] };
+          // We need to expose a public method for this in WingController or cast to any
+          // For now, let's add a public method to WingController
+          (this.wingController as any).sendOsc(address, args || []);
+        }
+        break;
     }
   }
 }

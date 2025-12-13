@@ -292,6 +292,7 @@ export function useMonitorController() {
     clearQueue: () => sendCommand('CLEAR_QUEUE', null),
     disconnect,
     connect,
-    toggleMockMode
+    toggleMockMode,
+    sendOscCommand: (address: string, args: any[]) => sendCommand('SEND_OSC', { address, args })
   };
 }
