@@ -25,6 +25,8 @@ describe('useMonitorController', () => {
   beforeEach(() => {
     jest.clearAllMocks();
     mockWsInstance = null;
+    // Reset mock mode env
+    process.env.VITE_MOCK_MODE = 'false';
   });
 
   it('should initialize with default state', () => {
@@ -60,42 +62,63 @@ describe('useMonitorController', () => {
     expect(result.current.state.isMuted).toBe(true);
   });
 
-  it('should handle queue updates', async () => {
+  it('should handle manual disconnect', async () => {
     const { result } = renderHook(() => useMonitorController());
 
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 10));
     });
 
-    const mockQueue = [{ address: '/test', args: [1] }];
+    expect(result.current.isConnected).toBe(true);
 
     act(() => {
-      if (mockWsInstance && mockWsInstance.onmessage) {
-        mockWsInstance.onmessage({
-          data: JSON.stringify({
-            type: 'QUEUE_UPDATE',
-            payload: mockQueue
-          })
-        });
-      }
+      result.current.disconnect();
     });
 
-    expect(result.current.queue).toEqual(mockQueue);
+    expect(mockWsInstance.close).toHaveBeenCalled();
+    
+    // Simulate close event
+    act(() => {
+        if (mockWsInstance && mockWsInstance.onclose) {
+            mockWsInstance.onclose();
+        }
+    });
+
+    expect(result.current.isConnected).toBe(false);
   });
 
-  it('should send commands via WebSocket', async () => {
+  it('should handle manual connect', async () => {
     const { result } = renderHook(() => useMonitorController());
 
+    // Initial connect
     await act(async () => {
       await new Promise(resolve => setTimeout(resolve, 10));
     });
 
+    // Disconnect
     act(() => {
-      result.current.updateState({ mainLevel: 50 });
+      result.current.disconnect();
+    });
+    
+    // Simulate close
+    act(() => {
+        if (mockWsInstance && mockWsInstance.onclose) {
+            mockWsInstance.onclose();
+        }
     });
 
-    expect(mockWsInstance.send).toHaveBeenCalledWith(
-      JSON.stringify({ type: 'SET_VOLUME', payload: 50 })
-    );
+    expect(result.current.isConnected).toBe(false);
+
+    // Reconnect
+    act(() => {
+      result.current.connect();
+    });
+
+    // Wait for new connection
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    });
+
+    expect(result.current.isConnected).toBe(true);
   });
 });

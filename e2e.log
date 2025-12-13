@@ -1,0 +1,34 @@
+
+ NX   Running target e2e for project api-e2e and 2 tasks it depends on:
+
+
+
+> nx run api:serve:development
+
+[0m[7m[1m[33m NX [39m[22m[27m[0m  [33mNx Daemon is not enabled. Assets will not be updated when they are changed.[39m
+[2m../../../dist/apps/api/src/settings.template.json[22m
+
+> nx run api:build:production
+
+
+[2m../../../dist/apps/api/src/settings.template.json[22m
+[ [32mwatch[39m ] build succeeded, watching for changes...
+[1m[31mStarting inspector on localhost:9229 failed: address already in use[39m[22m
+[1m[31m[39m[22m
+Starting Wing Monitor Controller API...
+Environment: development
+Mock Mode: true
+Initializing Wing Monitor Controller...
+Using Config: IP=192.168.1.70, MockMode=true
+[INFO] Running in MOCK MODE
+[1m[31mError: listen EADDRINUSE: address already in use :::3001[39m[22m
+[1m[31m    at Server.setupListenHandle [as _listen2] (node:net:1937:16)[39m[22m
+[1m[31m    at listenInCluster (node:net:1994:12)[39m[22m
+[1m[31m    at Server.listen (node:net:2099:7)[39m[22m
+[1m[31m    at /home/ubuntu/wing-monitor-controller-web/libs/monitor-backend/src/lib/monitor-backend.ts:122:19[39m[22m
+[1m[31m    at new Promise (<anonymous>)[39m[22m
+[1m[31m    at MonitorServer.<anonymous> (/home/ubuntu/wing-monitor-controller-web/libs/monitor-backend/src/lib/monitor-backend.ts:121:12)[39m[22m
+[1m[31m    at Generator.next (<anonymous>)[39m[22m
+[1m[31m    at fulfilled (/home/ubuntu/wing-monitor-controller-web/node_modules/.pnpm/tslib@2.8.1/node_modules/tslib/tslib.js:167:62)[39m[22m
+[1m[31m[39m[22m
+[7m[1m[36m NX [39m[22m[27m [1mProcess exited with code 1, waiting for changes to restart...[22m

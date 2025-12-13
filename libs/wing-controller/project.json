@@ -10,7 +10,7 @@
       "executor": "@nx/jest:jest",
       "outputs": ["{workspaceRoot}/coverage/{projectRoot}"],
       "options": {
-        "jestConfig": "wing-controller/jest.config.ts"
+        "jestConfig": "libs/wing-controller/jest.config.ts"
       }
     },
     "build": {
