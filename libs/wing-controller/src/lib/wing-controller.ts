@@ -256,6 +256,39 @@ export class WingMonitorController extends EventEmitter {
     this.emitStateChange();
   }
 
+  public disconnect() {
+    if (this.isConnected) {
+      this.isConnected = false;
+      if (!this.isMockMode && this.udpPort) {
+        try {
+          this.udpPort.close();
+        } catch (e) {
+          console.error('Error closing UDP port:', e);
+        }
+      }
+      this.log('info', 'Disconnected from Wing Console');
+      this.emitStateChange();
+    }
+  }
+
+  public connect() {
+    if (!this.isConnected) {
+      if (this.isMockMode) {
+        this.isConnected = true;
+        this.log('info', 'Reconnected to Mock Wing Console');
+        this.emitStateChange();
+      } else {
+        // Re-open UDP port
+        try {
+          this.udpPort.open();
+          // isConnected will be set in 'ready' event
+        } catch (e) {
+          console.error('Error opening UDP port:', e);
+        }
+      }
+    }
+  }
+
   // --- Internal Logic ---
 
   private setMonitorSource(inputIndex: number) {

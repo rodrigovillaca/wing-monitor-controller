@@ -1,45 +1,44 @@
-import { createServer } from "http";
-import express from "express";
-import path from "path";
-import { MonitorServer } from "@wing-monitor/monitor-backend";
-import { APP_CONFIG } from "@wing-monitor/shared-models";
+import { MonitorServer } from '@wing-monitor/monitor-backend';
+import { config as wingConfig, MOCK_MODE } from './config';
+import { APP_CONFIG } from '@wing-monitor/shared-models';
+import path from 'path';
 
-// Prefer CommonJS globals when available; fall back to cwd for dev runners.
-const runtimeDirname: string =
-  typeof __dirname !== "undefined" ? __dirname : process.cwd();
+async function main() {
+  try {
+    console.log('Starting Wing Monitor Controller API...');
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`Mock Mode: ${MOCK_MODE}`);
+    
+    // Determine static path for serving the frontend
+    // In production (built), it might be different than dev
+    const staticPath = path.join(process.cwd(), 'dist/apps/web-client');
+    
+    const server = new MonitorServer(
+      wingConfig,
+      APP_CONFIG.API_PORT,
+      MOCK_MODE,
+      staticPath
+    );
 
-async function bootstrap() {
-  const app = express();
-  const server = createServer(app);
-
-  // Initialize Monitor Server (Backend Logic)
-  const monitorServer = new MonitorServer(server);
-  await monitorServer.start();
-
-  // Health check endpoint
-  app.get('/health', (_req, res) => {
-    res.json({
-      status: 'ok',
-      timestamp: new Date().toISOString(),
-      version: '1.0.0'
+    await server.start();
+    
+    // Handle graceful shutdown
+    process.on('SIGTERM', () => {
+      console.log('SIGTERM received, shutting down...');
+      server.stop();
+      process.exit(0);
     });
-  });
-
-  // Serve static files from dist/apps/web-client
-  const staticPath = path.join(process.cwd(), 'dist/apps/web-client');
-  app.use(express.static(staticPath));
-
-  // Handle client-side routing
-  app.get("*", (_req, res) => {
-    res.sendFile(path.join(staticPath, "index.html"));
-  });
-
-  // Use port 3001 for backend
-  const port = APP_CONFIG?.API_PORT || 3001;
-
-  server.listen(port, () => {
-    console.log(`Server running on http://localhost:${port}/`);
-  });
+    
+    process.on('SIGINT', () => {
+      console.log('SIGINT received, shutting down...');
+      server.stop();
+      process.exit(0);
+    });
+    
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
 }
 
-bootstrap().catch(console.error);
+main();

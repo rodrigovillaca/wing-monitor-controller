@@ -19,6 +19,8 @@
     "../../libs/shared-models/src/**/*.spec.ts",
     "../../libs/shared-models/src/**/*.test.ts",
     "../../libs/wing-controller/src/**/*.spec.ts",
-    "../../libs/wing-controller/src/**/*.test.ts"
+    "../../libs/wing-controller/src/**/*.test.ts",
+    "../../libs/monitor-backend/src/**/*.spec.ts",
+    "../../libs/monitor-backend/src/**/*.test.ts"
   ]
 }
