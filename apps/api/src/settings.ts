@@ -1,6 +1,8 @@
 import fs from "fs/promises";
 import path from "path";
 import os from "os";
+import { WingMonitorConfig } from '@wing-monitor/shared-models';
+import { config as defaultConfig } from './config';
 
 const HOME_DIR = os.homedir();
 const SETTINGS_FILE = path.join(HOME_DIR, ".monitor-controller-settings");
@@ -9,11 +11,13 @@ const TEMPLATE_FILE = path.join(__dirname, "settings.template.json");
 export interface Settings {
   volumeUnit: "percent" | "db";
   unityLevel: number;
+  wing: WingMonitorConfig;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
   volumeUnit: "db",
   unityLevel: 75,
+  wing: defaultConfig
 };
 
 export async function loadSettings(): Promise<Settings> {
@@ -45,7 +49,21 @@ export async function loadSettings(): Promise<Settings> {
 
   try {
     const data = await fs.readFile(SETTINGS_FILE, "utf-8");
-    return JSON.parse(data) as Settings;
+    const loadedSettings = JSON.parse(data) as Settings;
+    
+    // Merge with defaults to ensure all fields exist (in case of schema updates)
+    return {
+      ...DEFAULT_SETTINGS,
+      ...loadedSettings,
+      wing: {
+        ...DEFAULT_SETTINGS.wing,
+        ...(loadedSettings.wing || {}),
+        network: {
+          ...DEFAULT_SETTINGS.wing.network,
+          ...(loadedSettings.wing?.network || {})
+        }
+      }
+    };
   } catch (err) {
     console.error("Failed to read settings file:", err);
     return DEFAULT_SETTINGS;

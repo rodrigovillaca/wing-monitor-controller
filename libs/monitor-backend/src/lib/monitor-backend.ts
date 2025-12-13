@@ -55,6 +55,14 @@ export class MonitorServer {
   public async start() {
     // Load settings
     this.settings = await loadSettings();
+    
+    // Override initial config with settings if available
+    if (this.settings && this.settings.wing) {
+      console.log('Loading saved Wing configuration...');
+      this.config = this.settings.wing;
+      // Re-initialize controller with saved config
+      this.wingController = new WingMonitorController(this.config, this.mockMode);
+    }
 
     this.wingController.on('ready', () => {
       console.log('Wing Controller connected and ready');
@@ -233,6 +241,44 @@ export class MonitorServer {
           "unityLevel" in payload
         ) {
           this.settings = payload as Settings;
+          
+          // If wing config is included, update it
+          if ("wing" in payload) {
+            this.config = payload.wing as WingMonitorConfig;
+            // Re-initialize controller with new config
+            // Note: In a real scenario we might want to be more careful about hot-reloading
+            // but for now we'll disconnect and reconnect
+            this.wingController.disconnect();
+            this.wingController = new WingMonitorController(this.config, this.mockMode);
+            
+            // Re-attach listeners
+            this.wingController.on('ready', () => {
+              this.broadcastState(this.wingController.getState());
+            });
+            this.wingController.on("stateChanged", () => {
+              this.broadcastState(this.wingController.getState());
+            });
+            this.wingController.on("queueUpdate", (queue) => {
+              this.throttledBroadcastQueue(queue);
+            });
+            
+            this.wingController.connect();
+            
+            // Broadcast new config to clients
+            this.wss.clients.forEach((client) => {
+              if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                  type: 'CONFIG_UPDATE',
+                  payload: {
+                    inputs: this.config.monitorInputs.map((i, idx) => ({ name: i.name || `Input ${idx+1}`, id: idx })),
+                    auxInputs: this.config.auxInputs ? this.config.auxInputs.map((i, idx) => ({ name: i.name || `Aux ${idx+1}`, id: idx })) : [],
+                    outputs: this.config.monitorMatrixOutputs.map((o, idx) => ({ name: o.name || `Output ${idx+1}`, id: idx }))
+                  }
+                }));
+              }
+            });
+          }
+
           saveSettings(this.settings).catch((err: unknown) =>
             console.error("Failed to save settings:", err)
           );
