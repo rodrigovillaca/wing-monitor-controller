@@ -107,6 +107,14 @@ export class MonitorServer {
       this.broadcastHealth(health);
     });
 
+    this.wingController.on("pingUpdate", (ping) => {
+      this.broadcastPing(ping);
+    });
+
+    this.wingController.on("trafficUpdate", (rate) => {
+      this.broadcastTraffic(rate);
+    });
+
     // WebSocket handling
     this.wss.on('connection', (ws) => {
       console.log('Client connected');
@@ -219,6 +227,32 @@ export class MonitorServer {
     const message = JSON.stringify({
       type: 'HEALTH_UPDATE',
       payload: health
+    });
+    
+    this.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  }
+
+  private broadcastPing(ping: number) {
+    const message = JSON.stringify({
+      type: 'PING_UPDATE',
+      payload: ping
+    });
+    
+    this.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  }
+
+  private broadcastTraffic(rate: number) {
+    const message = JSON.stringify({
+      type: 'TRAFFIC_UPDATE',
+      payload: rate
     });
     
     this.wss.clients.forEach((client) => {

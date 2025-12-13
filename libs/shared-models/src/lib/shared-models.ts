@@ -66,6 +66,6 @@ export const APP_CONFIG = {
 };
 
 export interface WebSocketMessage {
-  type: 'STATE_UPDATE' | 'SETTINGS_UPDATE' | 'QUEUE_UPDATE' | 'LOGS_UPDATE' | 'LOG_ENTRY' | 'HEALTH_UPDATE';
+  type: 'STATE_UPDATE' | 'SETTINGS_UPDATE' | 'QUEUE_UPDATE' | 'LOGS_UPDATE' | 'LOG_ENTRY' | 'HEALTH_UPDATE' | 'PING_UPDATE' | 'TRAFFIC_UPDATE';
   payload: any;
 }

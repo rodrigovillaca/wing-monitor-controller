@@ -38,6 +38,8 @@ export default function MonitorController() {
     queue,
     logs,
     connectionHealth,
+    ping,
+    trafficRate,
     clearQueue,
     disconnect,
     connect,
@@ -92,6 +94,11 @@ export default function MonitorController() {
                     {connectionHealth === 'healthy' ? 'ONLINE' : 
                      connectionHealth === 'unstable' ? 'UNSTABLE' : 'OFFLINE'}
                   </span>
+                  <div className="h-4 w-[1px] bg-gray-300/30 mx-2" />
+                  <div className="flex flex-col text-[10px] leading-tight text-muted-foreground font-mono">
+                    <span>PING: {ping}ms</span>
+                    <span>OSC: {trafficRate}/s</span>
+                  </div>
                 </>
               ) : (
                 <>

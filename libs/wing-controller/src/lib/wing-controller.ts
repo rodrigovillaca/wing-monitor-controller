@@ -12,6 +12,11 @@ export class WingMonitorController extends EventEmitter {
   private keepAliveInterval: NodeJS.Timeout | null = null;
   private lastHeartbeat: number = 0;
   private connectionHealth: 'healthy' | 'unstable' | 'disconnected' = 'disconnected';
+  private lastPingTime: number = 0;
+  private ping: number = 0;
+  private trafficCount: number = 0;
+  private trafficRate: number = 0; // messages per second
+  private trafficInterval: NodeJS.Timeout | null = null;
   
   // Command Queue
   private commandQueue: { id: string, address: string, args: any[], status: 'pending' | 'sent' | 'failed', timestamp: number }[] = [];
@@ -68,11 +73,21 @@ export class WingMonitorController extends EventEmitter {
       this.refreshConsoleState();
       this.startMetering();
       this.startKeepAlive();
+      this.startTrafficMonitoring();
     });
 
     this.udpPort.on("message", (oscMsg: any) => {
-      this.lastHeartbeat = Date.now();
+      const now = Date.now();
+      this.lastHeartbeat = now;
       this.connectionHealth = 'healthy';
+      this.trafficCount++;
+      
+      // Calculate ping if this is a response to our ping
+      if (oscMsg.address === '/xremote') {
+        this.ping = now - this.lastPingTime;
+        this.emit('pingUpdate', this.ping);
+      }
+      
       this.handleOscMessage(oscMsg);
     });
 
@@ -498,6 +513,7 @@ export class WingMonitorController extends EventEmitter {
     if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
     this.keepAliveInterval = setInterval(() => {
       if (this.isConnected) {
+        this.lastPingTime = Date.now();
         this.sendOsc('/xremote', []);
         
         // Check for heartbeat timeout (no messages for 10 seconds)
@@ -518,5 +534,14 @@ export class WingMonitorController extends EventEmitter {
 
   private log(level: LogLevel, message: string) {
     console.log(`[${level.toUpperCase()}] ${message}`);
+  }
+
+  private startTrafficMonitoring() {
+    if (this.trafficInterval) clearInterval(this.trafficInterval);
+    this.trafficInterval = setInterval(() => {
+      this.trafficRate = this.trafficCount;
+      this.trafficCount = 0;
+      this.emit('trafficUpdate', this.trafficRate);
+    }, 1000);
   }
 }
