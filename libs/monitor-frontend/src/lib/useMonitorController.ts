@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { MonitorState } from '@wing-monitor/shared-models';
 
 export interface ConfigItem {
@@ -45,8 +45,9 @@ export function useMonitorController() {
   const [isConnected, setIsConnected] = useState(false);
   const [queue, setQueue] = useState<CommandQueueItem[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
+  const shouldReconnect = useRef(true);
 
-  useEffect(() => {
+  const connect = useCallback(() => {
     // Check for Mock Mode
     if (import.meta.env.VITE_MOCK_MODE === 'true') {
       console.log('Running in MOCK MODE');
@@ -68,7 +69,8 @@ export function useMonitorController() {
       return;
     }
 
-    // Connect to WebSocket
+    shouldReconnect.current = true;
+
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     // In development (port 3000), connect to backend on port 3001
     // In production, connect to same host/port
@@ -76,51 +78,69 @@ export function useMonitorController() {
       ? `${window.location.hostname}:3001` 
       : window.location.host;
     const wsUrl = `${protocol}//${host}`;
-    
-    const connect = () => {
-      const ws = new WebSocket(wsUrl);
-      wsRef.current = ws;
 
-      ws.onopen = () => {
-        console.log('Connected to server');
-        setIsConnected(true);
-      };
+    if (wsRef.current && (wsRef.current.readyState === WebSocket.OPEN || wsRef.current.readyState === WebSocket.CONNECTING)) {
+      return;
+    }
 
-      ws.onclose = () => {
-        console.log('Disconnected from server');
-        setIsConnected(false);
-        // Reconnect after 2 seconds
-        setTimeout(connect, 2000);
-      };
+    const ws = new WebSocket(wsUrl);
+    wsRef.current = ws;
 
-      ws.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'STATE_UPDATE') {
-            setState(data.payload);
-          } else if (data.type === 'CONFIG_UPDATE') {
-            setInputs(data.payload.inputs);
-            setAuxInputs(data.payload.auxInputs || []);
-            setOutputs(data.payload.outputs);
-          } else if (data.type === 'SETTINGS_UPDATE') {
-            setSettings(data.payload);
-          } else if (data.type === 'QUEUE_UPDATE') {
-            setQueue(data.payload);
-          }
-        } catch (e) {
-          console.error('Error parsing message', e);
-        }
-      };
+    ws.onopen = () => {
+      console.log('Connected to server');
+      setIsConnected(true);
     };
 
+    ws.onclose = () => {
+      console.log('Disconnected from server');
+      setIsConnected(false);
+      // Reconnect after 2 seconds only if allowed
+      if (shouldReconnect.current) {
+        setTimeout(connect, 2000);
+      }
+    };
+
+    ws.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (data.type === 'STATE_UPDATE') {
+          setState(data.payload);
+        } else if (data.type === 'CONFIG_UPDATE') {
+          setInputs(data.payload.inputs);
+          setAuxInputs(data.payload.auxInputs || []);
+          setOutputs(data.payload.outputs);
+        } else if (data.type === 'SETTINGS_UPDATE') {
+          setSettings(data.payload);
+        } else if (data.type === 'QUEUE_UPDATE') {
+          setQueue(data.payload);
+        }
+      } catch (e) {
+        console.error('Error parsing message', e);
+      }
+    };
+  }, []);
+
+  const disconnect = useCallback(() => {
+    if (import.meta.env.VITE_MOCK_MODE === 'true') {
+      setIsConnected(false);
+      return;
+    }
+    shouldReconnect.current = false;
+    if (wsRef.current) {
+      wsRef.current.close();
+    }
+  }, []);
+
+  useEffect(() => {
     connect();
 
     return () => {
+      shouldReconnect.current = false;
       if (wsRef.current) {
         wsRef.current.close();
       }
     };
-  }, []);
+  }, [connect]);
 
   const sendCommand = (type: string, payload: any) => {
     if (import.meta.env.VITE_MOCK_MODE === 'true') {
@@ -181,7 +201,7 @@ export function useMonitorController() {
     handleSaveSettings,
     queue,
     clearQueue: () => sendCommand('CLEAR_QUEUE', null),
-    disconnect: () => sendCommand('DISCONNECT', null),
-    connect: () => sendCommand('CONNECT', null)
+    disconnect,
+    connect
   };
 }
