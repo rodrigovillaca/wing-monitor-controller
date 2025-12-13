@@ -48,7 +48,8 @@
         "production": {
           "buildTarget": "api:build:production"
         }
-      }
+      },
+      "dependsOn": ["^build"]
     },
     "test": {
       "executor": "@nx/jest:jest",
