@@ -24,10 +24,26 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
   const [activeTab, setActiveTab] = useState<'general' | 'network' | 'inputs' | 'aux' | 'outputs' | 'subwoofer'>('general');
 
   useEffect(() => {
-    setSettings(initialSettings);
+    if (initialSettings) {
+      setSettings(initialSettings);
+    }
   }, [initialSettings, isOpen]);
 
   if (!isOpen) return null;
+
+  if (!settings.wing) {
+    return (
+      <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 backdrop-blur-sm">
+        <div className="bg-neu-base p-8 rounded-2xl shadow-2xl w-full max-w-md border border-gray-800 flex flex-col items-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-accent mb-4"></div>
+          <p className="font-rajdhani text-foreground">Loading settings...</p>
+          <button onClick={onClose} className="mt-4 text-sm text-muted-foreground hover:text-foreground">
+            Close
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   const updateWingConfig = (path: string, value: any) => {
     if (!settings.wing) return;
