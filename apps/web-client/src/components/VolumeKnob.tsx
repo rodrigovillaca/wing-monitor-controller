@@ -21,7 +21,10 @@ export function VolumeKnob({
   const [isDragging, setIsDragging] = useState(false);
   const [startY, setStartY] = useState(0);
   const [startValue, setStartValue] = useState(0);
+  const [isEditing, setIsEditing] = useState(false);
+  const [inputValue, setInputValue] = useState('');
   const knobRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // Convert 0-100 value to rotation degrees (-135 to 135)
   const rotation = (value / 100) * 270 - 135;
@@ -39,6 +42,75 @@ export function VolumeKnob({
     }
     return `${db > 0 ? '+' : ''}${db.toFixed(1)} dB`;
   }, [value, displayUnit]);
+
+  const handleDoubleClick = () => {
+    setIsEditing(true);
+    // Pre-fill with current numeric value
+    if (displayUnit === 'percent') {
+      setInputValue(Math.round(value).toString());
+    } else {
+      if (value === 0) {
+        setInputValue('-inf');
+      } else if (value >= 75) {
+        const db = ((value - 75) / 25) * 10;
+        setInputValue(db.toFixed(1));
+      } else {
+        const db = (value / 75) * 90 - 90;
+        setInputValue(db.toFixed(1));
+      }
+    }
+    // Focus input on next render
+    setTimeout(() => inputRef.current?.select(), 0);
+  };
+
+  const commitValue = () => {
+    setIsEditing(false);
+    let newValue = value;
+    const cleanInput = inputValue.trim().toLowerCase();
+
+    if (cleanInput === '-inf' || cleanInput === '-infinity') {
+      newValue = 0;
+    } else if (cleanInput.endsWith('%')) {
+      const num = parseFloat(cleanInput.replace('%', ''));
+      if (!isNaN(num)) newValue = Math.max(0, Math.min(100, num));
+    } else if (cleanInput.endsWith('db')) {
+      const num = parseFloat(cleanInput.replace('db', ''));
+      if (!isNaN(num)) {
+        // Convert dB to 0-100
+        if (num >= 0) {
+          newValue = 75 + (num / 10) * 25;
+        } else {
+          newValue = ((num + 90) / 90) * 75;
+        }
+        newValue = Math.max(0, Math.min(100, newValue));
+      }
+    } else {
+      // No unit, assume current displayUnit
+      const num = parseFloat(cleanInput);
+      if (!isNaN(num)) {
+        if (displayUnit === 'percent') {
+          newValue = Math.max(0, Math.min(100, num));
+        } else {
+          // Assume dB
+          if (num >= 0) {
+            newValue = 75 + (num / 10) * 25;
+          } else {
+            newValue = ((num + 90) / 90) * 75;
+          }
+          newValue = Math.max(0, Math.min(100, newValue));
+        }
+      }
+    }
+    onChange(newValue);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      commitValue();
+    } else if (e.key === 'Escape') {
+      setIsEditing(false);
+    }
+  };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -172,9 +244,26 @@ export function VolumeKnob({
       </div>
       
       {/* Value Display */}
-      <div className="absolute bottom-[-15%] font-rajdhani font-bold text-xl text-accent tracking-wider">
-        {displayValue}
-      </div>
+      {isEditing ? (
+        <input
+          ref={inputRef}
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onBlur={commitValue}
+          onKeyDown={handleKeyDown}
+          className="absolute bottom-[-15%] w-[80px] text-center bg-black/50 text-accent font-rajdhani font-bold text-xl border border-accent/50 rounded outline-none z-50"
+          autoFocus
+        />
+      ) : (
+        <div 
+          className="absolute bottom-[-15%] font-rajdhani font-bold text-xl text-accent tracking-wider cursor-text hover:text-cyan-300 transition-colors"
+          onDoubleClick={handleDoubleClick}
+          title="Double click to edit"
+        >
+          {displayValue}
+        </div>
+      )}
     </div>
   );
 }
