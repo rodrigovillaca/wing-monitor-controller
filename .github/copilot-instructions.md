@@ -1,15 +1,17 @@
-# GitHub Copilot Instructions for Wing Studio Monitor Controller
+# Wing Monitor Controller - Copilot Instructions
 
-This document provides context and guidelines for GitHub Copilot to generate high-quality, project-aligned code for the Wing Studio Monitor Controller.
+This document provides context and guidelines for working on the Wing Monitor Controller project.
 
 ## 1. Project Overview & Architecture
 
 *   **Type**: Nx Monorepo
 *   **Goal**: Web-based monitor controller for Behringer Wing console via OSC.
 *   **Structure**:
-    *   `apps/web-client`: React 18 + Vite frontend.
+    *   `apps/web-client`: React 19 + Vite frontend.
     *   `apps/api`: Node.js + Express + WebSocket backend.
     *   `libs/wing-controller`: Core logic for OSC communication (Behringer Wing specific).
+    *   `libs/monitor-backend`: Backend logic including settings management and server setup.
+    *   `libs/monitor-frontend`: Frontend logic including state management hooks.
     *   `libs/shared-models`: Shared TypeScript interfaces and types (DTOs).
 
 ## 2. Collaboration Model: Manus AI + Human Developer
@@ -28,7 +30,7 @@ This project is developed through an asynchronous collaboration between **Manus 
 ## 3. Technology Stack
 
 *   **Language**: TypeScript (Strict mode enabled).
-*   **Frontend**: React 18, Vite, Wouter (routing), Tailwind CSS (v4).
+*   **Frontend**: React 19, Vite, Wouter (routing), Tailwind CSS (v4).
 *   **Backend**: Node.js, Express, `ws` (WebSocket), `node-osc`.
 *   **Testing**: Jest, React Testing Library.
 *   **Package Manager**: pnpm.
@@ -42,16 +44,20 @@ This project is developed through an asynchronous collaboration between **Manus 
 
 ### React (Frontend)
 *   **Components**: Use Functional Components with Hooks.
-*   **State**: Use `useContext` for global state (e.g., `WingContext`) and `useState`/`useReducer` for local state.
-*   **Styling**: Use Tailwind CSS.
+*   **State**: Use `useMonitorController` hook for all Wing-related state. Implement optimistic updates for UI responsiveness.
+*   **Styling**: Use Tailwind CSS 4.
     *   **Neomorphism**: This project uses a specific Neomorphic design language.
-    *   Use `shadow-neu-pressed` for active states.
-    *   Use `shadow-neu-flat` for static elements.
-    *   Use `bg-background` (defined in `index.css`) as the base color.
+    *   Use `neu-flat`, `neu-pressed`, and `neu-convex` utility classes for depth.
+    *   Use `font-rajdhani` for headers and technical text.
+    *   **Do not** introduce new colors without checking `tailwind.config.js` or `index.css` variables.
 *   **Performance**: Memoize expensive calculations with `useMemo` and callbacks with `useCallback`.
 
 ### Node.js (Backend)
 *   **Async/Await**: Use `async/await` for asynchronous operations.
+*   **Configuration**:
+    *   Settings are stored in `~/.monitor-controller-settings`.
+    *   Use `libs/monitor-backend/src/lib/settings.ts` for loading/saving.
+    *   **Never** hardcode IP addresses or paths; use the configuration object.
 *   **WebSockets**:
     *   Use typed messages defined in `libs/shared-models`.
     *   Always handle connection errors and disconnections gracefully.
@@ -74,10 +80,10 @@ When defining a new message type for WebSocket communication, add it to `libs/sh
 ```typescript
 // Example
 export interface MonitorState {
-  mainVolume: number; // 0.0 to 1.0
-  mute: boolean;
-  dim: boolean;
-  source: 'AES50-A' | 'USB' | 'LOCAL';
+  mainLevel: number; // 0-100
+  isMuted: boolean;
+  isDimmed: boolean;
+  activeInputIndex: number;
 }
 ```
 
@@ -86,9 +92,14 @@ When generating UI components, follow this style:
 
 ```tsx
 // Example of Neomorphic style
-<button className="h-16 w-16 rounded-full bg-background shadow-neu-flat active:shadow-neu-pressed transition-all duration-200">
-  <Icon />
-</button>
+<NeuButton
+  label="TALK"
+  active={state.isTalkbackEnabled}
+  onClick={() => updateState({ isTalkbackEnabled: !state.isTalkbackEnabled })}
+  className="w-24 h-24 rounded-full"
+  ledColor="red"
+  icon={<Mic2 />}
+/>
 ```
 
 ### OSC Command Construction
@@ -96,14 +107,33 @@ When adding new Wing commands in `libs/wing-controller`:
 
 ```typescript
 // Example
-public setMainVolume(level: number): void {
+public setVolume(level: number): void {
   // Level must be float 0.0 - 1.0
-  this.sendOSC('/main/st/mix/fader', level);
+  this.sendOSC(this.config.monitorMain.path + '/fader', level / 100);
 }
 ```
 
-## 6. Workflow Guidelines
+## 6. Git Workflow
 
-*   **File Creation**: When asked to create a file, always check if it belongs in `apps/` or `libs/`.
-*   **Refactoring**: When refactoring, ensure no regression in existing tests.
-*   **Comments**: Add JSDoc comments for public methods in libraries.
+*   **Authentication**: Use `gh` CLI for authentication.
+*   **Commits**: Follow Conventional Commits (e.g., `feat:`, `fix:`, `docs:`).
+*   **Pushing**: Always pull before pushing.
+
+## 7. Important Context
+
+*   **Mock Mode**: The app supports a Mock Mode (`VITE_MOCK_MODE=true`) for development without a physical console.
+*   **Settings**: The settings modal allows configuring the Wing IP, ports, and channel paths.
+*   **Subwoofer**: Subwoofer control is handled via a specific matrix path and trim setting.
+
+## 8. Common Tasks
+
+*   **Adding a new setting**:
+    1.  Update `WingMonitorConfig` in `libs/shared-models`.
+    2.  Update `SettingsModal.tsx` to add the UI field.
+    3.  Update `settings.ts` default values.
+    4.  Update `useMonitorController.ts` mock data.
+
+*   **Adding a new command**:
+    1.  Add command type to `handleClientMessage` in `monitor-backend.ts`.
+    2.  Add method to `WingMonitorController` class.
+    3.  Add frontend wrapper in `useMonitorController.ts`.
