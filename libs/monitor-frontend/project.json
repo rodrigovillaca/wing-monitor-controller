@@ -1,0 +1,9 @@
+{
+  "name": "monitor-frontend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/monitor-frontend/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project monitor-frontend --web",
+  "targets": {}
+}

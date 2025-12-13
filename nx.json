@@ -62,10 +62,7 @@
       }
     }
   ],
-  "ignorePatterns": [
-    "**/_temp_backup/**",
-    "**/tmp/**"
-  ],
+  "ignorePatterns": ["**/_temp_backup/**", "**/tmp/**"],
   "generators": {
     "@nx/react": {
       "application": {
@@ -79,7 +76,8 @@
       },
       "library": {
         "style": "css",
-        "linter": "none"
+        "linter": "none",
+        "unitTestRunner": "jest"
       }
     }
   },

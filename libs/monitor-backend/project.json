@@ -1,0 +1,19 @@
+{
+  "name": "monitor-backend",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "libs/monitor-backend/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/libs/monitor-backend",
+        "main": "libs/monitor-backend/src/index.ts",
+        "tsConfig": "libs/monitor-backend/tsconfig.lib.json",
+        "assets": ["libs/monitor-backend/*.md"]
+      }
+    }
+  }
+}

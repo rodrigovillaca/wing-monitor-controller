@@ -9,6 +9,11 @@ export class WingMonitorController extends EventEmitter {
   private isConnected: boolean = false;
   private isMockMode: boolean = false;
   private meterInterval: NodeJS.Timeout | null = null;
+  
+  // Command Queue
+  private commandQueue: { address: string, args: any[] }[] = [];
+  private isProcessingQueue: boolean = false;
+  private queueInterval: number = 10; // ms between commands
 
   constructor(config: WingMonitorConfig, mockMode: boolean = false) {
     super();
@@ -315,22 +320,42 @@ export class WingMonitorController extends EventEmitter {
 
   // --- Helper Methods ---
 
-  private sendOsc(address: string, args: any[], attempt = 1) {
-    if (!this.isConnected) return;
-    
-    if (this.isMockMode) {
-      this.log('debug', `[MOCK] Sent OSC: ${address} ${JSON.stringify(args)}`);
-      return;
+  private sendOsc(address: string, args: any[]) {
+    this.commandQueue.push({ address, args });
+    this.processQueue();
+  }
+
+  private async processQueue() {
+    if (this.isProcessingQueue) return;
+    this.isProcessingQueue = true;
+
+    while (this.commandQueue.length > 0) {
+      const command = this.commandQueue.shift();
+      if (!command) break;
+
+      if (!this.isConnected) {
+        // If not connected, maybe drop or wait? For now, drop to avoid buildup
+        continue;
+      }
+
+      if (this.isMockMode) {
+        this.log('debug', `[MOCK] Sent OSC: ${command.address} ${JSON.stringify(command.args)}`);
+      } else {
+        try {
+          this.udpPort.send({
+            address: command.address,
+            args: command.args
+          });
+        } catch (err: any) {
+          this.log('error', `Failed to send OSC: ${err.message}`);
+        }
+      }
+
+      // Wait a bit before sending the next command to ensure order and prevent flooding
+      await new Promise(resolve => setTimeout(resolve, this.queueInterval));
     }
 
-    try {
-      this.udpPort.send({
-        address: address,
-        args: args
-      });
-    } catch (err: any) {
-      this.log('error', `Failed to send OSC: ${err.message}`);
-    }
+    this.isProcessingQueue = false;
   }
 
   private handleOscMessage(oscMsg: any) {

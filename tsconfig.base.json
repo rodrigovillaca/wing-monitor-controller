@@ -17,7 +17,9 @@
     "paths": {
       "@wing-monitor/wing-controller": ["libs/wing-controller/src/index.ts"],
       "@wing-monitor/shared-models": ["libs/shared-models/src/index.ts"],
-      "@/*": ["apps/web-client/src/*"]
+      "@/*": ["apps/web-client/src/*"],
+      "@wing-monitor/monitor-backend": ["libs/monitor-backend/src/index.ts"],
+      "@wing-monitor/monitor-frontend": ["libs/monitor-frontend/src/index.ts"]
     },
     "composite": true
   },
