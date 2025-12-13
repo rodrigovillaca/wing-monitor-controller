@@ -366,8 +366,13 @@ export class WingMonitorController extends EventEmitter {
       // Move to history
       this.commandQueue.shift();
       this.commandHistory.push(command);
-      if (this.commandHistory.length > 50) {
-        this.commandHistory.shift();
+      
+      // Enforce limits: Max 100 items, Max 5 minutes age
+      const fiveMinutesAgo = Date.now() - 5 * 60 * 1000;
+      this.commandHistory = this.commandHistory.filter(cmd => cmd.timestamp > fiveMinutesAgo);
+      
+      if (this.commandHistory.length > 100) {
+        this.commandHistory = this.commandHistory.slice(this.commandHistory.length - 100);
       }
 
       this.emit('queueUpdate', [...this.commandHistory, ...this.commandQueue]);
@@ -381,6 +386,11 @@ export class WingMonitorController extends EventEmitter {
 
   public getQueue() {
     return [...this.commandHistory, ...this.commandQueue];
+  }
+
+  public clearHistory() {
+    this.commandHistory = [];
+    this.emit('queueUpdate', [...this.commandHistory, ...this.commandQueue]);
   }
 
   private handleOscMessage(oscMsg: any) {

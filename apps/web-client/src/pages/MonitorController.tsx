@@ -31,7 +31,8 @@ export default function MonitorController() {
     updateState,
     toggleAux,
     handleSaveSettings,
-    queue
+    queue,
+    clearQueue
   } = useMonitorController();
 
   const [isQueueOpen, setIsQueueOpen] = React.useState(false);
@@ -52,6 +53,7 @@ export default function MonitorController() {
         isOpen={isQueueOpen}
         onClose={() => setIsQueueOpen(false)}
         queue={queue}
+        onClear={clearQueue}
       />
       <div className="neu-flat p-12 max-w-6xl w-full grid grid-cols-12 gap-8 relative overflow-hidden">
         {/* Settings Button */}

@@ -179,6 +179,7 @@ export function useMonitorController() {
     updateState,
     toggleAux,
     handleSaveSettings,
-    queue
+    queue,
+    clearQueue: () => sendCommand('CLEAR_QUEUE', null)
   };
 }

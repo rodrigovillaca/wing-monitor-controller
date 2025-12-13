@@ -7,9 +7,10 @@ interface CommandQueueModalProps {
   isOpen: boolean;
   onClose: () => void;
   queue: CommandQueueItem[];
+  onClear: () => void;
 }
 
-export function CommandQueueModal({ isOpen, onClose, queue }: CommandQueueModalProps) {
+export function CommandQueueModal({ isOpen, onClose, queue, onClear }: CommandQueueModalProps) {
   if (!isOpen) return null;
 
   return (
@@ -17,9 +18,19 @@ export function CommandQueueModal({ isOpen, onClose, queue }: CommandQueueModalP
       <div className="bg-neu-base p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-800 max-h-[80vh] flex flex-col">
         <div className="flex justify-between items-center mb-6">
           <h2 className="font-rajdhani font-bold text-2xl text-foreground tracking-wider">COMMAND QUEUE</h2>
-          <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
-            <X size={24} />
-          </button>
+          <div className="flex items-center gap-4">
+            {queue.length > 0 && (
+              <button 
+                onClick={onClear}
+                className="text-xs font-rajdhani font-bold text-red-500 hover:text-red-400 transition-colors border border-red-500/30 hover:border-red-500/60 px-3 py-1 rounded-lg"
+              >
+                CLEAR HISTORY
+              </button>
+            )}
+            <button onClick={onClose} className="text-muted-foreground hover:text-foreground transition-colors">
+              <X size={24} />
+            </button>
+          </div>
         </div>
 
         <div className="flex-1 overflow-y-auto neu-pressed rounded-xl p-4 space-y-2">

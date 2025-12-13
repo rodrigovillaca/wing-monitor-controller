@@ -9,6 +9,8 @@ export class MonitorServer {
   private wss: WebSocketServer;
   private wingController: WingMonitorController;
   private settings: Settings | null = null;
+  private lastQueueBroadcast = 0;
+  private queueBroadcastTimeout: NodeJS.Timeout | null = null;
 
   constructor(server: Server) {
     this.wss = new WebSocketServer({ server });
@@ -37,7 +39,7 @@ export class MonitorServer {
     });
 
     this.wingController.on("queueUpdate", (queue) => {
-      this.broadcastQueue(queue);
+      this.throttledBroadcastQueue(queue);
     });
 
     // WebSocket handling
@@ -96,6 +98,20 @@ export class MonitorServer {
         client.send(message);
       }
     });
+  }
+
+  private throttledBroadcastQueue(queue: any[]) {
+    const now = Date.now();
+    if (now - this.lastQueueBroadcast > 100) {
+      this.broadcastQueue(queue);
+      this.lastQueueBroadcast = now;
+    } else {
+      if (this.queueBroadcastTimeout) clearTimeout(this.queueBroadcastTimeout);
+      this.queueBroadcastTimeout = setTimeout(() => {
+        this.broadcastQueue(queue);
+        this.lastQueueBroadcast = Date.now();
+      }, 100);
+    }
   }
 
   private broadcastQueue(queue: any[]) {
@@ -185,6 +201,9 @@ export class MonitorServer {
             }
           });
         }
+        break;
+      case "CLEAR_QUEUE":
+        this.wingController.clearHistory();
         break;
     }
   }
