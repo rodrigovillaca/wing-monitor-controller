@@ -1,0 +1,25 @@
+sequenceDiagram
+    participant User
+    participant Browser as Web Client (React)
+    participant API as Node API (MonitorServer)
+    participant Wing as Wing Console (Hardware)
+
+    Note over Browser, API: WebSocket Connection (Port 3001)
+    Note over API, Wing: OSC over UDP (Port 2223)
+
+    User->>Browser: Open App
+    Browser->>API: WebSocket Connect
+    API->>Browser: Initial State (JSON)
+    
+    User->>Browser: Adjust Volume
+    Browser->>API: Send Command { type: 'SET_MAIN_VOLUME', value: 50 }
+    API->>Wing: Send OSC /ch/40/fdr 0.5
+    
+    Wing-->>API: OSC Update (if changed externally)
+    API->>Browser: Broadcast State Update
+    Browser->>User: Update UI
+
+    loop Keep Alive (Every 9s)
+        API->>Wing: /xremote
+        Wing-->>API: Current Values
+    end

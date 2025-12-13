@@ -1,0 +1,70 @@
+classDiagram
+    class WingMonitorController {
+        -config: WingMonitorConfig
+        -state: MonitorState
+        -udpPort: UDPPort
+        -isConnected: boolean
+        -isMockMode: boolean
+        +constructor(config, mockMode)
+        +connect()
+        +disconnect()
+        +getState() MonitorState
+        +setVolume(percent)
+        +setMute(muted)
+        +setDim(dimmed)
+        +setMono(mono)
+        +setInput(index)
+        +setOutput(index)
+        +setSubwoofer(enabled)
+        +toggleAuxInput(index)
+        -setupOsc()
+        -handleOscMessage(msg)
+        -sendOsc(address, args)
+        -startKeepAlive()
+    }
+
+    class MonitorServer {
+        -app: Express
+        -server: HTTPServer
+        -wss: WebSocketServer
+        -wingController: WingMonitorController
+        +constructor(config)
+        +start()
+        -setupWebSocket()
+        -handleConnection(ws)
+        -broadcastState()
+    }
+
+    class useMonitorController {
+        <<Hook>>
+        +isConnected: boolean
+        +state: MonitorState
+        +connect()
+        +disconnect()
+        +setMainVolume(val)
+        +toggleMute()
+        +toggleDim()
+        +toggleMono()
+        +selectInput(index)
+        +selectOutput(index)
+    }
+
+    class MonitorController {
+        <<React Component>>
+        -volume: number
+        -isMuted: boolean
+        +render()
+    }
+
+    class VolumeKnob {
+        <<React Component>>
+        -value: number
+        -isEditing: boolean
+        +handleDoubleClick()
+        +commitValue()
+    }
+
+    MonitorServer *-- WingMonitorController : manages
+    MonitorController --> useMonitorController : uses
+    MonitorController *-- VolumeKnob : renders
+    useMonitorController ..> MonitorServer : WebSocket (JSON)
