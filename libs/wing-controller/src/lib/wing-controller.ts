@@ -10,6 +10,8 @@ export class WingMonitorController extends EventEmitter {
   private isMockMode: boolean = false;
   private meterInterval: NodeJS.Timeout | null = null;
   private keepAliveInterval: NodeJS.Timeout | null = null;
+  private lastHeartbeat: number = 0;
+  private connectionHealth: 'healthy' | 'unstable' | 'disconnected' = 'disconnected';
   
   // Command Queue
   private commandQueue: { id: string, address: string, args: any[], status: 'pending' | 'sent' | 'failed', timestamp: number }[] = [];
@@ -60,6 +62,7 @@ export class WingMonitorController extends EventEmitter {
 
     this.udpPort.on("ready", () => {
       this.isConnected = true;
+      this.connectionHealth = 'healthy';
       this.log('info', `OSC Port Ready. Listening on port ${this.config.network.localPort}, sending to ${this.config.network.ipAddress}:${this.config.network.wingPort}`);
       this.emit('ready');
       this.refreshConsoleState();
@@ -68,6 +71,8 @@ export class WingMonitorController extends EventEmitter {
     });
 
     this.udpPort.on("message", (oscMsg: any) => {
+      this.lastHeartbeat = Date.now();
+      this.connectionHealth = 'healthy';
       this.handleOscMessage(oscMsg);
     });
 
@@ -494,8 +499,17 @@ export class WingMonitorController extends EventEmitter {
     this.keepAliveInterval = setInterval(() => {
       if (this.isConnected) {
         this.sendOsc('/xremote', []);
+        
+        // Check for heartbeat timeout (no messages for 10 seconds)
+        if (Date.now() - this.lastHeartbeat > 10000) {
+          if (this.connectionHealth === 'healthy') {
+            this.connectionHealth = 'unstable';
+            this.log('warn', 'Connection unstable: No heartbeat from console');
+            this.emit('healthUpdate', this.connectionHealth);
+          }
+        }
       }
-    }, 9000);
+    }, 2000); // Check more frequently
   }
 
   private emitStateChange() {

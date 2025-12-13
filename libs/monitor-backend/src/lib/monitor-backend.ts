@@ -103,6 +103,10 @@ export class MonitorServer {
       this.throttledBroadcastQueue(queue);
     });
 
+    this.wingController.on("healthUpdate", (health) => {
+      this.broadcastHealth(health);
+    });
+
     // WebSocket handling
     this.wss.on('connection', (ws) => {
       console.log('Client connected');
@@ -202,6 +206,19 @@ export class MonitorServer {
     const message = JSON.stringify({
       type: 'QUEUE_UPDATE',
       payload: queue
+    });
+    
+    this.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  }
+
+  private broadcastHealth(health: string) {
+    const message = JSON.stringify({
+      type: 'HEALTH_UPDATE',
+      payload: health
     });
     
     this.wss.clients.forEach((client) => {

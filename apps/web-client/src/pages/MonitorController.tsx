@@ -37,6 +37,7 @@ export default function MonitorController() {
     handleSaveSettings,
     queue,
     logs,
+    connectionHealth,
     clearQueue,
     disconnect,
     connect,
@@ -81,8 +82,16 @@ export default function MonitorController() {
             <div className="flex gap-2 items-center border-r border-gray-300/30 pr-4">
               {isConnected ? (
                 <>
-                  <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#48bb78]" />
-                  <span className="font-rajdhani text-xs text-foreground/80">ONLINE</span>
+                  <div className={cn(
+                    "w-2 h-2 rounded-full shadow-[0_0_5px]",
+                    connectionHealth === 'healthy' ? "bg-green-500 shadow-[#48bb78]" :
+                    connectionHealth === 'unstable' ? "bg-yellow-500 shadow-[#ecc94b]" :
+                    "bg-red-500 shadow-[#f56565]"
+                  )} />
+                  <span className="font-rajdhani text-xs text-foreground/80">
+                    {connectionHealth === 'healthy' ? 'ONLINE' : 
+                     connectionHealth === 'unstable' ? 'UNSTABLE' : 'OFFLINE'}
+                  </span>
                 </>
               ) : (
                 <>

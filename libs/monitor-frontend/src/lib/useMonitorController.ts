@@ -49,6 +49,7 @@ export function useMonitorController() {
   const [isConnected, setIsConnected] = useState(false);
   const [queue, setQueue] = useState<CommandQueueItem[]>([]);
   const [logs, setLogs] = useState<string[]>([]);
+  const [connectionHealth, setConnectionHealth] = useState<'healthy' | 'unstable' | 'disconnected'>('disconnected');
   const wsRef = useRef<WebSocket | null>(null);
   const shouldReconnect = useRef(true);
 
@@ -170,6 +171,8 @@ export function useMonitorController() {
           setLogs(data.payload);
         } else if (data.type === 'LOG_ENTRY') {
           setLogs(prev => [...prev, data.payload].slice(-100));
+        } else if (data.type === 'HEALTH_UPDATE') {
+          setConnectionHealth(data.payload);
         }
       } catch (e) {
         console.error('Error parsing message', e);
@@ -277,6 +280,7 @@ export function useMonitorController() {
     handleSaveSettings,
     queue,
     logs,
+    connectionHealth,
     clearQueue: () => sendCommand('CLEAR_QUEUE', null),
     disconnect,
     connect,
