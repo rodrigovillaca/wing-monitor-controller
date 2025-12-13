@@ -9,6 +9,7 @@ export class WingMonitorController extends EventEmitter {
   private isConnected: boolean = false;
   private isMockMode: boolean = false;
   private meterInterval: NodeJS.Timeout | null = null;
+  private keepAliveInterval: NodeJS.Timeout | null = null;
   
   // Command Queue
   private commandQueue: { id: string, address: string, args: any[], status: 'pending' | 'sent' | 'failed', timestamp: number }[] = [];
@@ -62,6 +63,7 @@ export class WingMonitorController extends EventEmitter {
       this.emit('ready');
       this.refreshConsoleState();
       this.startMetering();
+      this.startKeepAlive();
     });
 
     this.udpPort.on("message", (oscMsg: any) => {
@@ -82,10 +84,33 @@ export class WingMonitorController extends EventEmitter {
   }
 
   private refreshConsoleState() {
-    // In a real implementation, we would query the console for current state
-    // /xremote to subscribe to updates
-    // For now, we just push our initial state
-    this.updateConsole();
+    // Subscribe to updates
+    this.sendOsc('/xremote', []);
+    
+    // Request current state for key parameters
+    // We rely on xremote to send us the current values, but we can also force query if needed.
+    // For now, xremote should trigger the console to send current values of active pages/channels.
+    // However, xremote typically sends updates for *changes*. To get initial state, we might need to query.
+    // But since we don't know the exact query paths for everything without a massive dump, 
+    // we'll assume xremote + manual queries for our specific channels.
+    
+    // Query Monitor Main
+    this.sendOsc(this.config.monitorMain.path + '/fdr', []);
+    this.sendOsc(this.config.monitorMain.path + '/mute', []);
+    
+    // Query Aux Monitor
+    if (this.config.auxMonitor) {
+      this.sendOsc(this.config.auxMonitor.path + '/fdr', []);
+      this.sendOsc(this.config.auxMonitor.path + '/mute', []);
+    }
+    
+    // Query Global States
+    this.sendOsc('/outputs/main/dim', []);
+    this.sendOsc('/outputs/main/mono', []);
+    
+    // We push our initial state only if we want to enforce it. 
+    // But usually, a controller should reflect the console state first.
+    // So we WON'T call updateConsole() here, we let the console tell us its state.
   }
 
   private updateConsole() {
@@ -426,10 +451,57 @@ export class WingMonitorController extends EventEmitter {
     this.emit('queueUpdate', [...this.commandHistory, ...this.commandQueue]);
   }
 
+  private startKeepAlive() {
+    if (this.keepAliveInterval) clearInterval(this.keepAliveInterval);
+    this.keepAliveInterval = setInterval(() => {
+      if (this.isConnected) {
+        this.sendOsc('/xremote', []);
+      }
+    }, 9000); // Send every 9 seconds
+  }
+
   private handleOscMessage(oscMsg: any) {
-    // Handle incoming OSC messages (e.g. meter data)
-    if (oscMsg.address === '/meters/1') {
-      // Parse meter blob
+    const address = oscMsg.address;
+    const args = oscMsg.args;
+    const value = args && args.length > 0 ? args[0].value : null;
+
+    // Monitor Main Fader
+    if (address === `${this.config.monitorMain.path}/fdr`) {
+      const level = Math.round(value * 100);
+      if (this.state.mainLevel !== level) {
+        this.state.mainLevel = level;
+        this.emitStateChange();
+      }
+    }
+    // Monitor Main Mute
+    else if (address === `${this.config.monitorMain.path}/mute`) {
+      const isMuted = value === 1;
+      if (this.state.isMuted !== isMuted) {
+        this.state.isMuted = isMuted;
+        this.emitStateChange();
+      }
+    }
+    // Dim
+    else if (address === '/outputs/main/dim') {
+      const isDimmed = value === 1;
+      if (this.state.isDimmed !== isDimmed) {
+        this.state.isDimmed = isDimmed;
+        this.emitStateChange();
+      }
+    }
+    // Mono
+    else if (address === '/outputs/main/mono') {
+      const isMono = value === 1;
+      if (this.state.isMono !== isMono) {
+        this.state.isMono = isMono;
+        this.emitStateChange();
+      }
+    }
+    // Meters
+    else if (address === '/meters/1') {
+      // Parse meter blob if available
+      // This requires knowing the blob format (usually float32 array)
+      // For now, we skip complex blob parsing to avoid crashes without proper testing
     }
   }
 
