@@ -1,24 +1,55 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { WingMonitorController } from "@wing-monitor/wing-controller";
-import { MonitorState } from "@wing-monitor/shared-models";
-import { config as wingConfig, MOCK_MODE } from "./config";
+import { MonitorState, WingMonitorConfig } from "@wing-monitor/shared-models";
 import { loadSettings, saveSettings, Settings } from "./settings";
-import { Server } from "http";
+import express, { Express } from "express";
+import { createServer, Server } from "http";
+import path from "path";
 
 export class MonitorServer {
+  private app: Express;
+  private server: Server;
   private wss: WebSocketServer;
   private wingController: WingMonitorController;
   private settings: Settings | null = null;
   private lastQueueBroadcast = 0;
   private queueBroadcastTimeout: NodeJS.Timeout | null = null;
+  private config: WingMonitorConfig;
+  private port: number;
+  private mockMode: boolean;
+  private staticPath: string;
 
-  constructor(server: Server) {
-    this.wss = new WebSocketServer({ server });
+  constructor(
+    config: WingMonitorConfig, 
+    port: number, 
+    mockMode: boolean,
+    staticPath: string
+  ) {
+    this.config = config;
+    this.port = port;
+    this.mockMode = mockMode;
+    this.staticPath = staticPath;
+
+    this.app = express();
+    this.server = createServer(this.app);
+    this.wss = new WebSocketServer({ server: this.server });
     
     console.log('Initializing Wing Monitor Controller...');
-    console.log(`Using Config: IP=${wingConfig.network.ipAddress}, MockMode=${MOCK_MODE}`);
+    console.log(`Using Config: IP=${config.network.ipAddress}, MockMode=${mockMode}`);
     
-    this.wingController = new WingMonitorController(wingConfig, MOCK_MODE);
+    this.wingController = new WingMonitorController(config, mockMode);
+    
+    this.setupExpress();
+  }
+
+  private setupExpress() {
+    // Serve static files
+    this.app.use(express.static(this.staticPath));
+
+    // Handle client-side routing
+    this.app.get("*", (_req, res) => {
+      res.sendFile(path.join(this.staticPath, "index.html"));
+    });
   }
 
   public async start() {
@@ -62,9 +93,9 @@ export class MonitorServer {
       ws.send(JSON.stringify({
         type: 'CONFIG_UPDATE',
         payload: {
-          inputs: wingConfig.monitorInputs.map((i, idx) => ({ name: i.name || `Input ${idx+1}`, id: idx })),
-          auxInputs: wingConfig.auxInputs ? wingConfig.auxInputs.map((i, idx) => ({ name: i.name || `Aux ${idx+1}`, id: idx })) : [],
-          outputs: wingConfig.monitorMatrixOutputs.map((o, idx) => ({ name: o.name || `Output ${idx+1}`, id: idx }))
+          inputs: this.config.monitorInputs.map((i, idx) => ({ name: i.name || `Input ${idx+1}`, id: idx })),
+          auxInputs: this.config.auxInputs ? this.config.auxInputs.map((i, idx) => ({ name: i.name || `Aux ${idx+1}`, id: idx })) : [],
+          outputs: this.config.monitorMatrixOutputs.map((o, idx) => ({ name: o.name || `Output ${idx+1}`, id: idx }))
         }
       }));
 
@@ -85,6 +116,23 @@ export class MonitorServer {
         }
       });
     });
+
+    // Start listening
+    return new Promise<void>((resolve) => {
+      this.server.listen(this.port, () => {
+        console.log(`Server running on http://localhost:${this.port}/`);
+        resolve();
+      });
+    });
+  }
+
+  public stop() {
+    if (this.server) {
+      this.server.close();
+    }
+    if (this.wingController) {
+      this.wingController.disconnect();
+    }
   }
 
   private broadcastState(state: MonitorState) {
@@ -204,6 +252,12 @@ export class MonitorServer {
         break;
       case "CLEAR_QUEUE":
         this.wingController.clearHistory();
+        break;
+      case "DISCONNECT":
+        this.wingController.disconnect();
+        break;
+      case "CONNECT":
+        this.wingController.connect();
         break;
     }
   }

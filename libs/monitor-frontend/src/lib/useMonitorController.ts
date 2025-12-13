@@ -180,6 +180,8 @@ export function useMonitorController() {
     toggleAux,
     handleSaveSettings,
     queue,
-    clearQueue: () => sendCommand('CLEAR_QUEUE', null)
+    clearQueue: () => sendCommand('CLEAR_QUEUE', null),
+    disconnect: () => sendCommand('DISCONNECT', null),
+    connect: () => sendCommand('CONNECT', null)
   };
 }
