@@ -1,6 +1,7 @@
 import React from 'react';
-import { X } from 'lucide-react';
+import { X, CheckCircle, Clock, AlertCircle } from 'lucide-react';
 import { CommandQueueItem } from '@wing-monitor/monitor-frontend';
+import { cn } from '@/lib/utils';
 
 interface CommandQueueModalProps {
   isOpen: boolean;
@@ -25,9 +26,26 @@ export function CommandQueueModal({ isOpen, onClose, queue }: CommandQueueModalP
           {queue.length === 0 ? (
             <div className="text-center text-muted-foreground font-rajdhani py-8">Queue is empty</div>
           ) : (
-            queue.map((item, index) => (
-              <div key={index} className="flex items-center justify-between p-3 bg-neu-base rounded-lg border border-gray-800/50">
-                <div className="font-mono text-sm text-accent">{item.address}</div>
+            queue.map((item) => (
+              <div key={item.id} className="flex items-center justify-between p-3 bg-neu-base rounded-lg border border-gray-800/50">
+                <div className="flex items-center gap-3">
+                  {item.status === 'sent' && <CheckCircle size={16} className="text-green-500" />}
+                  {item.status === 'pending' && <Clock size={16} className="text-yellow-500 animate-pulse" />}
+                  {item.status === 'failed' && <AlertCircle size={16} className="text-red-500" />}
+                  
+                  <div className="flex flex-col">
+                    <span className={cn(
+                      "font-mono text-sm",
+                      item.status === 'sent' ? "text-green-500/80" : 
+                      item.status === 'failed' ? "text-red-500/80" : "text-accent"
+                    )}>
+                      {item.address}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {new Date(item.timestamp).toLocaleTimeString()}
+                    </span>
+                  </div>
+                </div>
                 <div className="font-mono text-xs text-muted-foreground truncate max-w-[200px]">
                   {JSON.stringify(item.args)}
                 </div>

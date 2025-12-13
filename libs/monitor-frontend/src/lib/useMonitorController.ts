@@ -12,8 +12,11 @@ export interface AppSettings {
 }
 
 export interface CommandQueueItem {
+  id: string;
   address: string;
   args: any[];
+  status: 'pending' | 'sent' | 'failed';
+  timestamp: number;
 }
 
 export function useMonitorController() {

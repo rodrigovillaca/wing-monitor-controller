@@ -8,7 +8,8 @@
   "include": [
     "src/**/*.ts",
     "../../libs/shared-models/src/**/*.ts",
-    "../../libs/wing-controller/src/**/*.ts"
+    "../../libs/wing-controller/src/**/*.ts",
+    "../../libs/monitor-backend/src/**/*.ts"
   ],
   "exclude": [
     "jest.config.ts",

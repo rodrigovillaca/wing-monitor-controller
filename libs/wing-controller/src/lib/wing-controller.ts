@@ -11,7 +11,8 @@ export class WingMonitorController extends EventEmitter {
   private meterInterval: NodeJS.Timeout | null = null;
   
   // Command Queue
-  private commandQueue: { address: string, args: any[] }[] = [];
+  private commandQueue: { id: string, address: string, args: any[], status: 'pending' | 'sent' | 'failed', timestamp: number }[] = [];
+  private commandHistory: { id: string, address: string, args: any[], status: 'pending' | 'sent' | 'failed', timestamp: number }[] = [];
   private isProcessingQueue: boolean = false;
   private queueInterval: number = 10; // ms between commands
 
@@ -321,8 +322,15 @@ export class WingMonitorController extends EventEmitter {
   // --- Helper Methods ---
 
   private sendOsc(address: string, args: any[]) {
-    this.commandQueue.push({ address, args });
-    this.emit('queueUpdate', this.commandQueue);
+    const command = {
+      id: Math.random().toString(36).substring(7),
+      address,
+      args,
+      status: 'pending' as const,
+      timestamp: Date.now()
+    };
+    this.commandQueue.push(command);
+    this.emit('queueUpdate', [...this.commandHistory, ...this.commandQueue]);
     this.processQueue();
   }
 
@@ -331,39 +339,48 @@ export class WingMonitorController extends EventEmitter {
     this.isProcessingQueue = true;
 
     while (this.commandQueue.length > 0) {
-      const command = this.commandQueue.shift();
+      const command = this.commandQueue[0]; // Peek
       if (!command) break;
 
       if (!this.isConnected) {
         // If not connected, maybe drop or wait? For now, drop to avoid buildup
+        this.commandQueue.shift();
         continue;
       }
 
-      if (this.isMockMode) {
-        this.log('debug', `[MOCK] Sent OSC: ${command.address} ${JSON.stringify(command.args)}`);
-      } else {
-        try {
+      try {
+        if (this.isMockMode) {
+          this.log('debug', `[MOCK] Sent OSC: ${command.address} ${JSON.stringify(command.args)}`);
+        } else {
           this.udpPort.send({
             address: command.address,
             args: command.args
           });
-        } catch (err: any) {
-          this.log('error', `Failed to send OSC: ${err.message}`);
         }
+        command.status = 'sent';
+      } catch (err: any) {
+        this.log('error', `Failed to send OSC: ${err.message}`);
+        command.status = 'failed';
       }
+
+      // Move to history
+      this.commandQueue.shift();
+      this.commandHistory.push(command);
+      if (this.commandHistory.length > 50) {
+        this.commandHistory.shift();
+      }
+
+      this.emit('queueUpdate', [...this.commandHistory, ...this.commandQueue]);
 
       // Wait a bit before sending the next command to ensure order and prevent flooding
       await new Promise(resolve => setTimeout(resolve, this.queueInterval));
-      
-      this.emit('queueUpdate', this.commandQueue);
     }
 
     this.isProcessingQueue = false;
-    this.emit('queueUpdate', this.commandQueue);
   }
 
   public getQueue() {
-    return [...this.commandQueue];
+    return [...this.commandHistory, ...this.commandQueue];
   }
 
   private handleOscMessage(oscMsg: any) {

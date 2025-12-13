@@ -1,0 +1,23 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@wing-monitor/wing-controller": ["libs/wing-controller/src/index.ts"],
+      "@wing-monitor/shared-models": ["libs/shared-models/src/index.ts"],
+      "@wing-monitor/monitor-backend": ["libs/monitor-backend/src/index.ts"],
+      "@wing-monitor/monitor-frontend": ["libs/monitor-frontend/src/index.ts"],
+      "@/*": ["apps/web-client/src/*"]
+    }
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    { "path": "./apps/api" },
+    { "path": "./apps/web-client" },
+    { "path": "./libs/shared-models" },
+    { "path": "./libs/wing-controller" },
+    { "path": "./libs/monitor-backend" },
+    { "path": "./libs/monitor-frontend" }
+  ]
+}
