@@ -3,6 +3,7 @@ import { VolumeKnob } from '@/components/VolumeKnob';
 import { NeuButton } from '@/components/NeuButton';
 import { StereoMeter } from '@/components/StereoMeter';
 import { SettingsModal } from '@/components/SettingsModal';
+import { CommandQueueModal } from '@/components/CommandQueueModal';
 import { useMonitorController } from '@wing-monitor/monitor-frontend';
 import { 
   Mic2, 
@@ -29,8 +30,11 @@ export default function MonitorController() {
     setIsSettingsOpen,
     updateState,
     toggleAux,
-    handleSaveSettings
+    handleSaveSettings,
+    queue
   } = useMonitorController();
+
+  const [isQueueOpen, setIsQueueOpen] = React.useState(false);
 
   return (
     <div className="min-h-screen bg-neu-base flex items-center justify-center p-8">
@@ -39,6 +43,15 @@ export default function MonitorController() {
         onClose={() => setIsSettingsOpen(false)} 
         onSave={handleSaveSettings}
         initialSettings={settings}
+        onOpenQueue={() => {
+          setIsSettingsOpen(false);
+          setIsQueueOpen(true);
+        }}
+      />
+      <CommandQueueModal
+        isOpen={isQueueOpen}
+        onClose={() => setIsQueueOpen(false)}
+        queue={queue}
       />
       <div className="neu-flat p-12 max-w-6xl w-full grid grid-cols-12 gap-8 relative overflow-hidden">
         {/* Settings Button */}

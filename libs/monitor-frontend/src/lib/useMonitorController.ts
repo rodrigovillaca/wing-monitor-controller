@@ -11,6 +11,11 @@ export interface AppSettings {
   unityLevel: number;
 }
 
+export interface CommandQueueItem {
+  address: string;
+  args: any[];
+}
+
 export function useMonitorController() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [settings, setSettings] = useState<AppSettings>({
@@ -35,6 +40,7 @@ export function useMonitorController() {
   const [auxInputs, setAuxInputs] = useState<ConfigItem[]>([]);
   const [outputs, setOutputs] = useState<ConfigItem[]>([]);
   const [isConnected, setIsConnected] = useState(false);
+  const [queue, setQueue] = useState<CommandQueueItem[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
 
   useEffect(() => {
@@ -95,6 +101,8 @@ export function useMonitorController() {
             setOutputs(data.payload.outputs);
           } else if (data.type === 'SETTINGS_UPDATE') {
             setSettings(data.payload);
+          } else if (data.type === 'QUEUE_UPDATE') {
+            setQueue(data.payload);
           }
         } catch (e) {
           console.error('Error parsing message', e);
@@ -167,6 +175,7 @@ export function useMonitorController() {
     setIsSettingsOpen,
     updateState,
     toggleAux,
-    handleSaveSettings
+    handleSaveSettings,
+    queue
   };
 }

@@ -12,9 +12,10 @@ interface SettingsModalProps {
   onClose: () => void;
   onSave: (settings: Settings) => void;
   initialSettings: Settings;
+  onOpenQueue: () => void;
 }
 
-export function SettingsModal({ isOpen, onClose, onSave, initialSettings }: SettingsModalProps) {
+export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpenQueue }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings>(initialSettings);
 
   useEffect(() => {
@@ -79,6 +80,17 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings }: Sett
               onChange={(e) => setSettings({ ...settings, unityLevel: Number(e.target.value) })}
               className="w-full bg-neu-base neu-pressed p-3 rounded-xl text-foreground font-rajdhani font-bold outline-none focus:ring-2 focus:ring-accent/50"
             />
+          </div>
+
+          {/* Advanced Section */}
+          <div className="pt-6 border-t border-gray-800/50">
+            <h3 className="font-rajdhani font-semibold text-foreground/60 tracking-widest mb-4 text-sm">ADVANCED</h3>
+            <button
+              onClick={onOpenQueue}
+              className="w-full bg-neu-base neu-flat hover:bg-gray-800/30 text-accent py-3 rounded-xl font-rajdhani font-bold transition-all border border-accent/20 hover:border-accent/50"
+            >
+              VIEW COMMAND QUEUE
+            </button>
           </div>
         </div>
 

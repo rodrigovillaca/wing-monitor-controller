@@ -36,6 +36,10 @@ export class MonitorServer {
       this.broadcastState(this.wingController.getState());
     });
 
+    this.wingController.on("queueUpdate", (queue) => {
+      this.broadcastQueue(queue);
+    });
+
     // WebSocket handling
     this.wss.on('connection', (ws) => {
       console.log('Client connected');
@@ -44,6 +48,12 @@ export class MonitorServer {
       ws.send(JSON.stringify({
         type: 'STATE_UPDATE',
         payload: this.wingController.getState()
+      }));
+
+      // Send current queue
+      ws.send(JSON.stringify({
+        type: 'QUEUE_UPDATE',
+        payload: this.wingController.getQueue()
       }));
 
       // Send configuration so UI knows input/output names
@@ -79,6 +89,19 @@ export class MonitorServer {
     const message = JSON.stringify({
       type: 'STATE_UPDATE',
       payload: state
+    });
+    
+    this.wss.clients.forEach((client) => {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(message);
+      }
+    });
+  }
+
+  private broadcastQueue(queue: any[]) {
+    const message = JSON.stringify({
+      type: 'QUEUE_UPDATE',
+      payload: queue
     });
     
     this.wss.clients.forEach((client) => {

@@ -322,6 +322,7 @@ export class WingMonitorController extends EventEmitter {
 
   private sendOsc(address: string, args: any[]) {
     this.commandQueue.push({ address, args });
+    this.emit('queueUpdate', this.commandQueue);
     this.processQueue();
   }
 
@@ -353,9 +354,16 @@ export class WingMonitorController extends EventEmitter {
 
       // Wait a bit before sending the next command to ensure order and prevent flooding
       await new Promise(resolve => setTimeout(resolve, this.queueInterval));
+      
+      this.emit('queueUpdate', this.commandQueue);
     }
 
     this.isProcessingQueue = false;
+    this.emit('queueUpdate', this.commandQueue);
+  }
+
+  public getQueue() {
+    return [...this.commandQueue];
   }
 
   private handleOscMessage(oscMsg: any) {
