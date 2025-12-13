@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { MonitorState } from '@wing-monitor/shared-models';
+import { MonitorState, WingMonitorConfig } from '@wing-monitor/shared-models';
 
 export interface ConfigItem {
   name: string;
@@ -9,6 +9,7 @@ export interface ConfigItem {
 export interface AppSettings {
   volumeUnit: 'percent' | 'db';
   unityLevel: number;
+  wing?: WingMonitorConfig;
 }
 
 export interface CommandQueueItem {
@@ -66,6 +67,47 @@ export function useMonitorController() {
         { id: 10, name: 'Bluetooth' },
         { id: 11, name: 'Talkback Mic' }
       ]);
+      
+      // Initialize mock settings
+      setSettings({
+        volumeUnit: 'db',
+        unityLevel: 75,
+        wing: {
+          network: {
+            ipAddress: '192.168.1.70',
+            wingPort: 10024,
+            localPort: 9000,
+            retryAttempts: 3,
+            retryDelay: 100,
+          },
+          monitorMain: {
+            path: '/ch/40',
+            trim: 0
+          },
+          auxMonitor: {
+            path: '/aux/8',
+            trim: 0
+          },
+          monitorInputs: [
+            { name: 'DAW 1-2', sourceGroup: 'USB', sourceIndex: 1 },
+            { name: 'Mac System', sourceGroup: 'USB', sourceIndex: 3 },
+            { name: 'Reference', sourceGroup: 'AES50A', sourceIndex: 1 },
+          ],
+          auxInputs: [
+            { name: 'Bluetooth', sourceGroup: 'AUX', sourceIndex: 1 },
+            { name: 'Talkback Mic', sourceGroup: 'AUX', sourceIndex: 3 },
+          ],
+          monitorMatrixOutputs: [
+            { name: 'Main Monitors', path: '/mtx/1' },
+            { name: 'Nearfields', path: '/mtx/2' },
+            { name: 'Mini Cube', path: '/mtx/3' }
+          ],
+          subwoofer: {
+            path: '/mtx/4',
+            trim: 0,
+          }
+        }
+      });
       return;
     }
 
@@ -106,10 +148,12 @@ export function useMonitorController() {
         if (data.type === 'STATE_UPDATE') {
           setState(data.payload);
         } else if (data.type === 'CONFIG_UPDATE') {
+          console.log('Received CONFIG_UPDATE:', data.payload);
           setInputs(data.payload.inputs);
           setAuxInputs(data.payload.auxInputs || []);
           setOutputs(data.payload.outputs);
         } else if (data.type === 'SETTINGS_UPDATE') {
+          console.log('Received SETTINGS_UPDATE:', data.payload);
           setSettings(data.payload);
         } else if (data.type === 'QUEUE_UPDATE') {
           setQueue(data.payload);
@@ -145,6 +189,16 @@ export function useMonitorController() {
   const sendCommand = (type: string, payload: any) => {
     if (import.meta.env.VITE_MOCK_MODE === 'true') {
       console.log('Mock Command:', type, payload);
+      // Update local settings in mock mode
+      if (type === 'SAVE_SETTINGS') {
+        setSettings(payload);
+        // Also update inputs/outputs if they changed
+        if (payload.wing) {
+          setInputs(payload.wing.monitorInputs.map((i: any, idx: number) => ({ id: idx, name: i.name })));
+          setAuxInputs(payload.wing.auxInputs.map((i: any, idx: number) => ({ id: idx + 10, name: i.name })));
+          setOutputs(payload.wing.monitorMatrixOutputs.map((o: any, idx: number) => ({ id: idx, name: o.name })));
+        }
+      }
       return;
     }
     if (wsRef.current && wsRef.current.readyState === WebSocket.OPEN) {

@@ -19,8 +19,7 @@ interface SettingsModalProps {
 
 export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpenQueue }: SettingsModalProps) {
   const [settings, setSettings] = useState<Settings>(initialSettings);
-  const [activeTab, setActiveTab] = useState<'general' | 'network' | 'inputs' | 'outputs'>('general');
-  const [expandedSection, setExpandedSection] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState<'general' | 'network' | 'inputs' | 'outputs' | 'subwoofer'>('general');
 
   useEffect(() => {
     setSettings(initialSettings);
@@ -242,6 +241,35 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
     </div>
   );
 
+  const renderSubwooferTab = () => (
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <label className="font-rajdhani font-semibold text-foreground/80 block">Subwoofer Matrix Path</label>
+        <input
+          type="text"
+          value={settings.wing?.subwoofer?.path || '/mtx/4'}
+          onChange={(e) => updateWingConfig('subwoofer.path', e.target.value)}
+          className="w-full bg-neu-base neu-pressed p-3 rounded-xl text-foreground font-rajdhani font-bold outline-none focus:ring-2 focus:ring-accent/50"
+          placeholder="/mtx/4"
+        />
+      </div>
+      <div className="space-y-2">
+        <label className="font-rajdhani font-semibold text-foreground/80 block">Trim (dB)</label>
+        <input
+          type="number"
+          value={settings.wing?.subwoofer?.trim || 0}
+          onChange={(e) => updateWingConfig('subwoofer.trim', Number(e.target.value))}
+          className="w-full bg-neu-base neu-pressed p-3 rounded-xl text-foreground font-rajdhani font-bold outline-none focus:ring-2 focus:ring-accent/50"
+        />
+      </div>
+      <div className="p-4 bg-neu-base neu-flat rounded-xl">
+        <p className="text-sm text-muted-foreground font-rajdhani">
+          Note: Crossover frequency and EQ settings should be configured directly on the Wing console's matrix EQ.
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-neu-base p-8 rounded-2xl shadow-2xl w-full max-w-2xl border border-gray-800 max-h-[90vh] flex flex-col">
@@ -253,7 +281,7 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
         </div>
 
         <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
-          {(['general', 'network', 'inputs', 'outputs'] as const).map((tab) => (
+          {(['general', 'network', 'inputs', 'outputs', 'subwoofer'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -274,6 +302,7 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
           {activeTab === 'network' && renderNetworkTab()}
           {activeTab === 'inputs' && renderInputsTab()}
           {activeTab === 'outputs' && renderOutputsTab()}
+          {activeTab === 'subwoofer' && renderSubwooferTab()}
         </div>
 
         <div className="mt-8 pt-6 border-t border-gray-800/50 flex justify-end">
