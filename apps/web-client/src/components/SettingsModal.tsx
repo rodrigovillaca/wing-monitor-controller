@@ -95,10 +95,8 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
           <button
             onClick={() => setSettings({ ...settings, volumeUnit: 'percent' })}
             className={cn(
-              "flex-1 py-3 rounded-xl font-rajdhani font-bold transition-all",
-              settings.volumeUnit === 'percent'
-                ? "bg-accent text-accent-foreground shadow-[0_0_15px_rgba(var(--accent),0.3)]"
-                : "bg-neu-base neu-flat text-muted-foreground hover:text-foreground"
+              "flex-1 py-3 rounded-xl font-rajdhani font-bold transition-all neu-btn",
+              settings.volumeUnit === 'percent' && "active text-accent"
             )}
           >
             PERCENT (%)
@@ -106,10 +104,8 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
           <button
             onClick={() => setSettings({ ...settings, volumeUnit: 'db' })}
             className={cn(
-              "flex-1 py-3 rounded-xl font-rajdhani font-bold transition-all",
-              settings.volumeUnit === 'db'
-                ? "bg-accent text-accent-foreground shadow-[0_0_15px_rgba(var(--accent),0.3)]"
-                : "bg-neu-base neu-flat text-muted-foreground hover:text-foreground"
+              "flex-1 py-3 rounded-xl font-rajdhani font-bold transition-all neu-btn",
+              settings.volumeUnit === 'db' && "active text-accent"
             )}
           >
             DECIBELS (dB)
@@ -310,10 +306,8 @@ export function SettingsModal({ isOpen, onClose, onSave, initialSettings, onOpen
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={cn(
-                "px-4 py-2 rounded-lg font-rajdhani font-bold transition-all whitespace-nowrap",
-                activeTab === tab
-                  ? "bg-accent text-accent-foreground"
-                  : "bg-neu-base neu-flat text-muted-foreground hover:text-foreground"
+                "px-4 py-2 rounded-lg font-rajdhani font-bold transition-all whitespace-nowrap neu-btn",
+                activeTab === tab && "active text-accent"
               )}
             >
               {tab.toUpperCase()}
