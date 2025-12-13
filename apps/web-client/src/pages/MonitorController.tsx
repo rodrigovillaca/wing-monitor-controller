@@ -63,13 +63,13 @@ export default function MonitorController() {
         {/* Settings Button */}
         <button 
           onClick={() => setIsSettingsOpen(true)}
-          className="absolute top-6 right-6 text-muted-foreground hover:text-foreground transition-colors"
+          className="absolute top-6 right-6 text-muted-foreground hover:text-foreground transition-colors z-50"
         >
           <SettingsIcon size={24} />
         </button>
         
         {/* Header / Branding */}
-        <div className="col-span-12 flex justify-between items-center mb-4 border-b border-gray-300/30 pb-4">
+        <div className="col-span-12 flex justify-between items-center mb-4 border-b border-gray-300/30 pb-4 z-50 relative">
           <h1 className="font-rajdhani font-bold text-3xl tracking-[0.2em] text-foreground">
             WING <span className="text-accent">MONITOR</span>
           </h1>
@@ -101,8 +101,13 @@ export default function MonitorController() {
           </div>
         </div>
 
-        {/* Left Section: Inputs */}
-        <div className="col-span-3 flex flex-col gap-4">
+        {/* Main Controls Container - Disabled when offline */}
+        <div className={cn(
+          "col-span-12 grid grid-cols-12 gap-8 transition-all duration-300",
+          !isConnected && "opacity-50 pointer-events-none grayscale-[0.5]"
+        )}>
+          {/* Left Section: Inputs */}
+          <div className="col-span-3 flex flex-col gap-4">
           <h2 className="font-rajdhani font-semibold text-foreground/80 tracking-widest mb-2">SOURCES</h2>
           {inputs.length > 0 ? inputs.map((input) => (
             <NeuButton
@@ -212,22 +217,23 @@ export default function MonitorController() {
           </div>
         </div>
 
-        {/* Right Section: Outputs */}
-        <div className="col-span-3 flex flex-col gap-4">
-          <h2 className="font-rajdhani font-semibold text-foreground/80 tracking-widest mb-2 text-right">SPEAKERS</h2>
-          {outputs.length > 0 ? outputs.map((output) => (
-            <NeuButton
-              key={output.id}
-              label={output.name}
-              active={state.activeOutputIndex === output.id}
-              onClick={() => updateState({ activeOutputIndex: output.id })}
-              className="w-full h-20"
-              ledColor="cyan"
-              icon={<Speaker size={20} />}
-            />
-          )) : (
-            <div className="text-center text-muted-foreground font-rajdhani py-8">Loading Outputs...</div>
-          )}
+          {/* Right Section: Outputs */}
+          <div className="col-span-3 flex flex-col gap-4">
+            <h2 className="font-rajdhani font-semibold text-foreground/80 tracking-widest mb-2 text-right">SPEAKERS</h2>
+            {outputs.length > 0 ? outputs.map((output) => (
+              <NeuButton
+                key={output.id}
+                label={output.name}
+                active={state.activeOutputIndex === output.id}
+                onClick={() => updateState({ activeOutputIndex: output.id })}
+                className="w-full h-20"
+                ledColor="cyan"
+                icon={<Speaker size={20} />}
+              />
+            )) : (
+              <div className="text-center text-muted-foreground font-rajdhani py-8">Loading Outputs...</div>
+            )}
+          </div>
         </div>
 
       </div>
