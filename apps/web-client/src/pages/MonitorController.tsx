@@ -74,18 +74,7 @@ export default function MonitorController() {
             WING <span className="text-accent">MONITOR</span>
           </h1>
           <div className="flex gap-4 items-center">
-            <button
-              onClick={() => isConnected ? disconnect() : connect()}
-              className={cn(
-                "p-2 rounded-full transition-all duration-300 hover:bg-black/10 active:scale-95 outline-none",
-                isConnected ? "text-green-500 hover:text-green-400" : "text-red-500 hover:text-red-400"
-              )}
-              title={isConnected ? "Disconnect" : "Connect"}
-            >
-              <Power size={24} className={cn(isConnected && "drop-shadow-[0_0_8px_rgba(72,187,120,0.8)]")} />
-            </button>
-
-            <div className="flex gap-2 items-center border-l border-gray-300/30 pl-4">
+            <div className="flex gap-2 items-center border-r border-gray-300/30 pr-4">
               {isConnected ? (
                 <>
                   <div className="w-2 h-2 rounded-full bg-green-500 shadow-[0_0_5px_#48bb78]" />
@@ -98,6 +87,17 @@ export default function MonitorController() {
                 </>
               )}
             </div>
+
+            <button
+              onClick={() => isConnected ? disconnect() : connect()}
+              className={cn(
+                "p-2 rounded-full transition-all duration-300 hover:bg-black/10 active:scale-95 outline-none",
+                isConnected ? "text-green-500 hover:text-green-400" : "text-red-500 hover:text-red-400"
+              )}
+              title={isConnected ? "Disconnect" : "Connect"}
+            >
+              <Power size={24} className={cn(isConnected && "drop-shadow-[0_0_8px_rgba(72,187,120,0.8)]")} />
+            </button>
           </div>
         </div>
 
